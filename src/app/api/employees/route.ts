@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,9 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const data = await prisma.employees.create({ data: body });
+        // Encriptar la contraseña antes de guardar
+        const hashedPassword = await bcrypt.hash(body.password, 10);
+        const data = await prisma.employees.create({ data: { ...body, password: hashedPassword } });
         return NextResponse.json({ message: 'Empleado creado exitosamente', data });
     } catch (error) {
         return NextResponse.json({ error: 'Error al crear empleado', details: error }, { status: 500 });

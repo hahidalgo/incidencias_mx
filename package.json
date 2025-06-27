@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/client": "^6.10.1",
     "apexcharts": "^4.7.0",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
@@ -25,6 +26,7 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^24.0.4",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
