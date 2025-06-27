@@ -9,7 +9,7 @@ export async function OverviewCardsGroup() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
       <OverviewCard
-        label="Total Views"
+        label="Descansos Trabajados"
         data={{
           ...views,
           value: compactFormat(views.value),
@@ -18,16 +18,16 @@ export async function OverviewCardsGroup() {
       />
 
       <OverviewCard
-        label="Total Profit"
+        label="Prima dominical"
         data={{
           ...profit,
-          value: "$" + compactFormat(profit.value),
+          value: compactFormat(profit.value),
         }}
         Icon={icons.Profit}
       />
 
       <OverviewCard
-        label="Total Products"
+        label="Días devueltos"
         data={{
           ...products,
           value: compactFormat(products.value),
@@ -36,7 +36,7 @@ export async function OverviewCardsGroup() {
       />
 
       <OverviewCard
-        label="Total Users"
+        label="Faltas"
         data={{
           ...users,
           value: compactFormat(users.value),
