@@ -10,7 +10,8 @@
         "start": "next start",
         "lint": "next lint",
         "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
-        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\""
+        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+        "seed": "tsx scripts/seed.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.1.1",
@@ -45,7 +46,9 @@
         "@radix-ui/react-toggle": "^1.1.9",
         "@radix-ui/react-toggle-group": "^1.1.10",
         "@radix-ui/react-tooltip": "^1.2.7",
+        "@types/bcryptjs": "^2.4.6",
         "@vercel/analytics": "^1.5.0",
+        "bcryptjs": "^3.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
@@ -94,6 +97,7 @@
         "prisma": "^6.10.1",
         "tailwindcss": "^4.1.11",
         "tailwindcss-animate": "^1.0.7",
+        "tsx": "^4.20.3",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.35.0"
     }

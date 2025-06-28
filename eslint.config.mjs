@@ -74,6 +74,12 @@ export default [
         }
     },
     {
-        ignores: ['.next/*']
+        ignores: [
+            '.next/*',
+            'src/generated/**/*',
+            'node_modules/**/*',
+            'dist/**/*',
+            'build/**/*'
+        ]
     }
 ];

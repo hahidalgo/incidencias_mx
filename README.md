@@ -1,156 +1,147 @@
-# Next.js 15 Starter (shadcn) [[LIVE DEMO](https://nextjs-15-starter-shadcn.vercel.app/)]
+# Sistema de Gestión de Incidencias MX
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue) [![TypeScript](https://badgen.net/badge/icon/typescript?icon=typescript&label)](https://typescriptlang.org) ![ESLint](https://img.shields.io/badge/code%20style-eslint-brightgreen) ![GitHub stars](https://img.shields.io/github/stars/siddharthamaity/nextjs-15-starter-shadcn?style=social) ![GitHub forks](https://img.shields.io/github/forks/siddharthamaity/nextjs-15-starter-shadcn?style=social) [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/siddharthamaity)
+Un sistema moderno para la gestión de incidencias desarrollado con Next.js 15, Prisma, y shadcn/ui.
 
-*This is the Tailwind version for Next.js 15 Starter, you may be interested in other templates too -*
-- [**Next.js 15 Starter Core**](https://github.com/SiddharthaMaity/nextjs-15-starter-core)
-- [**Next.js 15 Starter with Tailwind CSS**](https://github.com/SiddharthaMaity/nextjs-15-starter-tailwind)
+## 🚀 Características
 
-Welcome to the **Next.js 15 Starter** repository! This starter template is built with Next.js 15, React 19, TypeScript 5, Tailwind CSS 3, Shadcn UI and comes packed with several powerful tools and configurations to accelerate your project setup and streamline development workflows using VS Code.
+- **Autenticación segura** con bcrypt
+- **Interfaz moderna** con shadcn/ui y Tailwind CSS
+- **Base de datos** MySQL con Prisma ORM
+- **Gestión de incidencias** y movimientos
+- **Panel de control** responsive
+- **Tema oscuro/claro** integrado
 
-![Next.js 15 Starter Shadcn](public/images/screenshot1.png)
+## 📋 Prerrequisitos
 
-![Next.js 15 Starter Shadcn](public/images/screenshot2.png)
+- Node.js 18+ 
+- MySQL
+- npm o yarn
 
-## 🚀 What's Included
+## 🛠️ Instalación
 
-- **Next.js 15**
-- **React 19**
-- **TypeScript 5**
-- **ESLint 9**
-- **Prettier 3**
-- **Tailwind CSS 4**
-- **Shadcn UI**
-- **App Directory**
-- **System, Light & Dark Mode**
-- **Next.js Bundle Analyzer**
-- **Dockerfile** with Node.js 22.16.0 (Alpine)
-- **Dockerfile.bun** with Bun 1.2.17 (Alpine)
+1. **Clonar el repositorio**
+   ```bash
+   git clone <tu-repositorio>
+   cd incidencias_mx
+   ```
 
-### 🛠️ ESLint Plugins
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-- [**@eslint/js**](https://www.npmjs.com/package/@eslint/js)
-- [**typescript-eslint**](https://github.com/typescript-eslint/typescript-eslint)
-- [**eslint-plugin-react**](https://github.com/jsx-eslint/eslint-plugin-react)
-- [**@next/eslint-plugin-next**](https://github.com/vercel/next.js)
-- [**eslint-config-prettier**](eslint-config-prettier)
-- [**eslint-plugin-tailwindcss**](https://github.com/francoismassart/eslint-plugin-tailwindcss)
-- [**eslint-plugin-import**](https://github.com/import-js/eslint-plugin-import)
-- [**eslint-plugin-promise**](https://github.com/eslint-community/eslint-plugin-promise)
+3. **Configurar variables de entorno**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Editar `.env` con tu configuración de base de datos:
+   ```env
+   DATABASE_URL="mysql://usuario:contraseña@localhost:3306/incidencias_mx"
+   ```
 
-### ✨ Prettier Plugins
+4. **Configurar la base de datos**
+   ```bash
+   # Generar y ejecutar migraciones
+   npx prisma migrate dev
+   
+   # Generar cliente de Prisma
+   npx prisma generate
+   
+   # Insertar datos de prueba
+   npm run seed
+   ```
 
-- [**@trivago/prettier-plugin-sort-imports**](https://github.com/trivago/prettier-plugin-sort-imports)
-- [**prettier-plugin-tailwindcss**](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)
+5. **Ejecutar el servidor de desarrollo**
+   ```bash
+   npm run dev
+   ```
 
-### 💻 VS Code Extensions (Recommended)
+## 🔐 Credenciales de Prueba
 
-To enhance development experience, install the following VS Code extensions:
+Después de ejecutar el seed, puedes usar estas credenciales:
 
-- [**Auto Close Tag**](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-close-tag)
-- [**Better Comments**](https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments)
-- [**DotENV**](https://marketplace.visualstudio.com/items?itemName=mikestead.dotenv)
-- [**EditorConfig for VS Code**](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
-- [**ESLint**](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [**formate: CSS/LESS/SCSS formatter**](https://marketplace.visualstudio.com/items?itemName=MikeBovenlander.formate)
-- [**Git History**](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
-- [**Import Cost**](https://marketplace.visualstudio.com/items?itemName=wix.vscode-import-cost)
-- [**JavaScript Booster**](https://marketplace.visualstudio.com/items?itemName=sburg.vscode-javascript-booster)
-- [**npm Intellisense**](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense)
-- [**Prettier - Code formatter**](https://marketplace.visualstudio.com/items?itemName=esbenp)
-- [**Todo Tree**](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
-- [**Turbo Console Log**](https://marketplace.visualstudio.com/items?itemName=ChakrounAnas.turbo-console-log)
-- [**Package Json Upgrade**](https://marketplace.visualstudio.com/items?itemName=codeandstuff.package-json-upgrade)
-- [**Visual Studio Code Commitizen Support**](https://marketplace.visualstudio.com/items?itemName=KnisterPeter.vscode-commitizen)
-- [**Markdown All in One**](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one)
+- **Email:** juan.perez@ejemplo.com
+- **Contraseña:** 123456
 
+## 📁 Estructura del Proyecto
 
-## 🏁 Getting Started
-
-### Prerequisites
-
-- **Bun**: Version 1.2.17 or higher OR
-- **Node.js**: Version 20.18.0 or higher
-- **Docker**: For containerized deployment (optional but recommended)
-
-### Installation
-
-1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/siddharthamaity/nextjs-15-starter-shadcn.git
-    cd nextjs-15-starter-shadcn
-    ```
-    To get the code without example change branch to without-example
-    ```bash
-    git checkout without-example
-    ```
-
-2. **Install Dependencies**:
-    ```bash
-    npm install
-    # or with Yarn
-    yarn install
-    # or with pnpm
-    pnpm install
-    # or with Bun
-    bun install
-    ```
-
-3. **Run Development Server**:
-    ```bash
-    npm run dev
-    # or with Yarn
-    yarn dev
-    # or with pnpm
-    pnpm dev
-    # or with Bun
-    bun dev
-    ```
-
-4. **Build for Production**:
-    ```bash
-    npm run build
-    # or with Yarn
-    yarn build
-    # or with pnpm
-    pnpm build
-    # or with Bun
-    bun run build
-    ```
-
-### 🐳 Docker Setup
-
-To use Docker, make sure Docker is installed on your machine. Then, build and run the Docker container:
-
-```bash
-docker build . -t nextjs-starter-shadcn
-# or if using Bun
-docker build . -t nextjs-starter-shadcn -f Dockerfile.bun
-
-docker run -p 3000:3000 nextjs-starter-shadcn
+```
+src/
+├── app/
+│   ├── api/auth/login/     # Endpoint de autenticación
+│   ├── (dashboard)/        # Panel de control (con navegación)
+│   ├── login/              # Página de login (sin navegación)
+│   └── layout.tsx          # Layout principal
+├── generated/prisma/       # Cliente de Prisma generado
+└── registry/              # Componentes de shadcn/ui
 ```
 
-### ☁ Try it in the Cloud
+## 🗄️ Esquema de Base de Datos
 
-[![Open in VS Code](https://img.shields.io/badge/Open%20in-VS%20Code-blue?logo=visualstudiocode)](https://vscode.dev/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+- **companies:** Empresas
+- **offices:** Oficinas
+- **employees:** Empleados (con autenticación por email)
+- **incidents:** Tipos de incidencias
+- **movements:** Registro de movimientos/incidencias
 
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Open%20in-GitHub%20Codespaces-blue?logo=github)](https://codespaces.new/SiddharthaMaity/nextjs-15-starter-shadcn)
+## 🎨 Tecnologías Utilizadas
 
-[![Open in CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+- **Frontend:** Next.js 15, React 19, TypeScript
+- **UI:** shadcn/ui, Tailwind CSS, Radix UI
+- **Backend:** Next.js API Routes
+- **Base de datos:** MySQL con Prisma ORM
+- **Autenticación:** bcrypt para hash de contraseñas
+- **Formularios:** React Hook Form con Zod validation
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/SiddharthaMaity/nextjs-15-starter-shadcn)
+## 🚀 Scripts Disponibles
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz_small.svg)](https://stackblitz.com/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+- `npm run dev` - Servidor de desarrollo
+- `npm run build` - Construir para producción
+- `npm run start` - Servidor de producción
+- `npm run seed` - Insertar datos de prueba
+- `npm run lint` - Verificar código
+- `npm run format` - Formatear código
 
-[![Open in Repl.it](https://replit.com/badge/github/SiddharthaMaity/nextjs-15-starter-shadcn)](https://replit.com/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+## 🔧 Desarrollo
 
-[![Open in Glitch](https://img.shields.io/badge/Open%20in-Glitch-blue?logo=glitch)](https://glitch.com/edit/#!/import/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+### Agregar nuevos componentes
 
-[![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/SiddharthaMaity/nextjs-15-starter-shadcn)
+```bash
+npx shadcn@latest add [component-name]
+```
 
-### License
+### Generar migraciones
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+```bash
+npx prisma migrate dev --name [nombre-migracion]
+```
+
+### Actualizar cliente de Prisma
+
+```bash
+npx prisma generate
+```
+
+## 📝 Notas
+
+- El sistema está configurado para usar MySQL como base de datos
+- Las contraseñas se hashean con bcrypt antes de almacenarse
+- La autenticación se realiza usando el email del empleado
+- La interfaz es completamente responsive y soporta tema oscuro
+- Todos los formularios incluyen validación con Zod
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ---
 
