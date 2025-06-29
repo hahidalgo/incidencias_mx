@@ -146,5 +146,6 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ---
 
 <p style="text-align: center;"> 
-![Logo de Soaint](logo-soaint-azul.png)
+![Logo de Soaint](assets/logo-soaint-azul.png)
+
 </p>
