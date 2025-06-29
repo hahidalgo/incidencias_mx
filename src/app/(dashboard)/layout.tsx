@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import NavigationBar from '@/app/(delete-this-and-modify-page.tsx)/NavigationBar';
+import NavigationBar from '@/app/(dashboard)/NavigationBar';
 
 const DashboardLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
     return (
