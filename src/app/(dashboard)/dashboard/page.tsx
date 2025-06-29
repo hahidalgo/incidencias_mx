@@ -1,9 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
 import { Button } from '@/registry/new-york-v4/ui/button';
 import { useRouter } from 'next/navigation';
+
+const icons = {
+  incidencias: '/images/icons/incidencias.svg',
+  vacaciones: '/images/icons/vacaciones.svg',
+  tiempolibre: '/images/icons/tiempo-libre.svg',
+  reportes: '/images/icons/reportes.svg',
+  datos: '/images/icons/datos-maestros.svg',
+  comunicados: '/images/icons/comunicados.svg',
+  nomina: '/images/icons/recibos-nomina.svg',
+};
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
@@ -13,11 +24,8 @@ export default function DashboardPage() {
     // En una implementación real, obtendrías la información del usuario desde el contexto o localStorage
     // Por ahora, simulamos que el usuario está logueado
     setUser({
-      name: 'Juan Pérez',
-      email: 'juan.perez@ejemplo.com',
-      role: 'Administrador',
-      companyId: 'empresa-001',
-      officeId: 'oficina-001'
+      name: 'Jessica',
+      email: 'jessica.he@ollamani.com.mx',
     });
   }, []);
 
@@ -37,102 +45,62 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Panel de Control
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Bienvenido, {user.name}
-            </p>
-          </div>
-          <Button onClick={handleLogout} variant="outline">
-            Cerrar Sesión
-          </Button>
-        </div>
+    <div className="min-h-screen bg-[#fafaff]">
+      {/* Header */}
+      
 
-        {/* User Info Card */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Información del Usuario</CardTitle>
-            <CardDescription>
-              Detalles de tu cuenta y permisos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Nombre</p>
-                <p className="text-lg">{user.name}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Email</p>
-                <p className="text-lg">{user.email}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Rol</p>
-                <p className="text-lg">{user.role}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">ID de Empresa</p>
-                <p className="text-lg">{user.companyId}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">ID de Oficina</p>
-                <p className="text-lg">{user.officeId}</p>
-              </div>
+      <main className="max-w-5xl mx-auto py-8 px-4">
+        {/* Novedades */}
+        <section className="mb-8">
+          <h2 className="flex items-center gap-2 text-[#18306a] text-base font-semibold mb-4">
+            <Image src="/images/icons/clock.svg" alt="Novedades" width={20} height={20} />
+            Novedades
+          </h2>
+          <div className="flex gap-6">
+            <div className="bg-[#3b3bb3] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
+              <Image src="/images/icons/megafono.svg" alt="Incidencias" width={32} height={32} className="mb-2" />
+              <span className="text-2xl font-bold">02</span>
+              <span className="text-base font-medium mt-1">Nuevas incidencias</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Incidencias</CardTitle>
-              <CardDescription>
-                Gestionar reportes de incidencias
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">
-                Ver Incidencias
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Registra */}
+        <section className="mb-8">
+          <h2 className="flex items-center gap-2 text-[#18306a] text-base font-semibold mb-4">
+            <Image src="/images/icons/edit.svg" alt="Registra" width={20} height={20} />
+            Registra
+          </h2>
+          <div className="flex gap-6 flex-wrap">
+            <CardButton icon={icons.incidencias} label="Incidencias" />
+            <CardButton icon={icons.vacaciones} label="Vacaciones" />
+            <CardButton icon={icons.tiempolibre} label="Tiempo Libre" />
+          </div>
+        </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Movimientos</CardTitle>
-              <CardDescription>
-                Historial de movimientos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline">
-                Ver Movimientos
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Reportes</CardTitle>
-              <CardDescription>
-                Generar reportes y estadísticas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline">
-                Crear Reporte
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        {/* Consulta */}
+        <section className="mb-8">
+          <h2 className="flex items-center gap-2 text-[#18306a] text-base font-semibold mb-4">
+            <Image src="/images/icons/search.svg" alt="Consulta" width={20} height={20} />
+            Consulta
+          </h2>
+          <div className="flex gap-6 flex-wrap">
+            <CardButton icon={icons.reportes} label="Reportes" />
+            <CardButton icon={icons.datos} label="Datos Maestros" />
+            <CardButton icon={icons.comunicados} label="Comunicados" />
+            <CardButton icon={icons.nomina} label="Recibos de Nómina" />
+          </div>
+        </section>
+      </main>
     </div>
+  );
+}
+
+function CardButton({ icon, label }: { icon: string; label: string }) {
+  return (
+    <button className="flex flex-col items-center justify-center w-40 h-28 bg-white rounded-xl shadow-sm border border-[#ececec] hover:shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3b3bb3] group">
+      <Image src={icon} alt={label} width={40} height={40} className="mb-2 group-hover:scale-110 transition-transform" />
+      <span className="text-[#f39200] font-semibold text-base group-hover:text-[#3b3bb3]">{label}</span>
+    </button>
   );
 } 
