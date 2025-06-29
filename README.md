@@ -144,10 +144,6 @@ npx prisma generate
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ---
-
-<p style="text-align: center;"> 
-![Logo de Soaint](https://github.com/hahidalgo/incidencias_mx/blob/main/assets/logo-soaint-azul.png)
-</p>
 <p align="center">
   <img src="assets/logo-soaint-azul.png" alt="Logo del Proyecto">
 </p>
