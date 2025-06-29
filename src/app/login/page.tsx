@@ -82,12 +82,14 @@ export default function LoginPage() {
         {/* Logos y personas */}
         <div className="relative z-10 flex flex-col h-full w-full justify-between">
           <div className="flex-1 flex flex-col justify-center items-center gap-8">
-            <Image src="/images/people.png" alt="Personas" width={320} height={320} className="mb-8" />
-            <div className="flex flex-col gap-8 items-center">
-              <Image src="/images/playcity.png" alt="PlayCity" width={120} height={40} />
-              <Image src="/images/banorte.png" alt="Banorte" width={120} height={40} />
-              <Image src="/images/intermex.png" alt="Intermex" width={120} height={40} />
-              <Image src="/images/televisa.png" alt="Televisa" width={120} height={40} />
+            {/* <Image src="/images/people.png" alt="Personas" width={320} height={320} className="mb-8" /> */}
+            <div className="flex flex-wrap justify-center gap-8 ">
+              <Image src="/images/playcity.png" alt="PlayCity" width={220} height={124} />
+              <Image src="/images/banorte.png" alt="Banorte" width={220} height={124} />
+            </div>
+            <div className="flex flex-wrap justify-center gap-8 ">
+              <Image src="/images/intermex.png" alt="Intermex" width={220} height={124} />
+              <Image src="/images/televisa.png" alt="Televisa" width={220} height={124} />
             </div>
           </div>
         </div>
@@ -97,7 +99,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md mx-auto">
           {/* Logo principal */}
           <div className="flex justify-center mb-8">
-            <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={180} height={60} />
+            <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={220} height={75} />
           </div>
           <h2 className="text-center text-[#18306a] text-lg font-semibold mb-2">Portal RRHH</h2>
           <h3 className="text-center text-gray-700 text-base font-medium mb-6">Inicio de Sesión</h3>
