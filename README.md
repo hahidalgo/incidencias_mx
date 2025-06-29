@@ -146,6 +146,6 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ---
 
 <p style="text-align: center;"> 
-![Logo de Soaint](assets/logo-soaint-azul.png)
+![Logo de Soaint](https://github.com/hahidalgo/incidencias_mx/blob/main/assets/logo-soaint-azul.png)
 
 </p>
