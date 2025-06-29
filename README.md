@@ -145,4 +145,6 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ---
 
-<p style="text-align: center;"> With ❤️ from :ve: :cl: </p>
+<p style="text-align: center;"> 
+![https://github.com/Haleymhm](https://github.com/Haleymhm/Haleymhm/blob/main/header-git.png) 
+</p>
