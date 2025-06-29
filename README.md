@@ -131,7 +131,7 @@ npx prisma generate
 - La interfaz es completamente responsive y soporta tema oscuro
 - Todos los formularios incluyen validación con Zod
 
-## 🤝 Contribuir
+## 🤝 Como Contribuir
 
 1. Fork el proyecto
 2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
