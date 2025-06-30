@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -54,10 +55,25 @@ export async function POST(request: NextRequest) {
       officeId: user.office_id,
     };
 
-    return NextResponse.json({
+    // Generar JWT
+    if (!process.env.JWT_SECRET) {
+      return NextResponse.json({ message: 'Configuración de JWT faltante' }, { status: 500 });
+    }
+    const token = jwt.sign(userSession, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // Crear respuesta y setear cookie httpOnly
+    const response = NextResponse.json({
       message: 'Login exitoso',
       user: userSession,
     });
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24, // 1 día
+    });
+    return response;
 
   } catch (error) {
     console.error('Error en login:', error);
