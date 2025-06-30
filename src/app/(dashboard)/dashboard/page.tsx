@@ -19,16 +19,20 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // En una implementación real, obtendrías la información del usuario desde el contexto o localStorage
-    // Por ahora, simulamos que el usuario está logueado
-    setUser({
-      name: 'Jessica',
-      email: 'jessica.he@ollamani.com.mx',
-    });
+    const checkSession = async () => {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+      } else {
+        router.push('/login');
+      }
+    };
+    checkSession();
   }, []);
 
-  const handleLogout = () => {
-    // Aquí limpiarías la sesión
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
   };
 
