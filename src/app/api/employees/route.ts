@@ -34,13 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     const employee = await prisma.employees.create({
-      data: {
-        office_id,
-        employee_code,
-        employee_name,
-        employee_type,
-        employee_status
-      }
+      data: { office_id, employee_code, employee_name, employee_type, employee_status }
     });
     return NextResponse.json(employee);
   } catch (error) {
@@ -48,7 +42,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT: Actualizar un empleado (requiere id en el body)
+// PUT: Editar un empleado (requiere id en el body)
 export async function PUT(request: NextRequest) {
   const token = getTokenFromRequest(request);
   if (!verifyAuthToken(token)) {
@@ -61,17 +55,11 @@ export async function PUT(request: NextRequest) {
     }
     const employee = await prisma.employees.update({
       where: { id },
-      data: {
-        office_id,
-        employee_code,
-        employee_name,
-        employee_type,
-        employee_status
-      }
+      data: { office_id, employee_code, employee_name, employee_type, employee_status }
     });
     return NextResponse.json(employee);
   } catch (error) {
-    return NextResponse.json({ message: 'Error al actualizar empleado' }, { status: 500 });
+    return NextResponse.json({ message: 'Error al editar empleado' }, { status: 500 });
   }
 }
 
