@@ -28,7 +28,7 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
                 className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground overscroll-none antialiased`}>
                 <ThemeProvider attribute='class'>
                     {children}
-                    <Toaster />
+                    <Toaster position='top-center' richColors/>
                 </ThemeProvider>
             </body>
         </html>

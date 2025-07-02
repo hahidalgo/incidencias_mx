@@ -34,11 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     const office = await prisma.offices.create({
-      data: {
-        company_id,
-        office_name,
-        office_status
-      }
+      data: { company_id, office_name, office_status }
     });
     return NextResponse.json(office);
   } catch (error) {
@@ -46,7 +42,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT: Actualizar una oficina (requiere id en el body)
+// PUT: Editar una oficina (requiere id en el body)
 export async function PUT(request: NextRequest) {
   const token = getTokenFromRequest(request);
   if (!verifyAuthToken(token)) {
@@ -59,15 +55,11 @@ export async function PUT(request: NextRequest) {
     }
     const office = await prisma.offices.update({
       where: { id },
-      data: {
-        company_id,
-        office_name,
-        office_status
-      }
+      data: { company_id, office_name, office_status }
     });
     return NextResponse.json(office);
   } catch (error) {
-    return NextResponse.json({ message: 'Error al actualizar oficina' }, { status: 500 });
+    return NextResponse.json({ message: 'Error al editar oficina' }, { status: 500 });
   }
 }
 

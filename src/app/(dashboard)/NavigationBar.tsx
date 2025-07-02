@@ -38,7 +38,9 @@ const NavigationBar = () => {
     return (
         <header className="w-full flex items-center justify-between px-6 py-2 bg-white shadow-sm">
             <div className="flex items-left gap-6">
-                <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={177} height={60} />
+                <Link href="/dashboard" className="flex items-center">
+                    <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={177} height={60} />
+                </Link>
                 <span className="text-lg text-[#0E2655] font-medium py-4 px-3">
                     Portal de <span className="font-bold text-[#0E2655]">Recursos Humanos</span>
                     <span className="text-gray-400">  |  </span>
@@ -57,11 +59,14 @@ const NavigationBar = () => {
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <div className="flex flex-col min-w-[160px]">
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded">Empleados</Link>
+                                <NavigationMenuLink asChild>
+                                        <Link href="/companies" className="px-4 py-2 hover:bg-accent rounded">Compañías</Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
-                                        <Link href="/companies" className="px-4 py-2 hover:bg-accent rounded">Compañías</Link>
+                                        <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded">Oficinas</Link>
+                                    </NavigationMenuLink>
+                                    <NavigationMenuLink asChild>
+                                        <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded">Empleados</Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
                                         <Link href="/users" className="px-4 py-2 hover:bg-accent rounded">Usuarios</Link>
