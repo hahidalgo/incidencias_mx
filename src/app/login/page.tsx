@@ -165,9 +165,6 @@ export default function LoginPage() {
                 'Acceder'
               )}
             </Button>
-            <div className="text-center mt-2">
-              <a href="#" className="text-xs text-[#f39200] hover:underline">¿Olvidaste tu contraseña?</a>
-            </div>
           </form>
         </div>
       </div>
