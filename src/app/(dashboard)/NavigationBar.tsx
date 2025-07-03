@@ -49,7 +49,8 @@ const NavigationBar = () => {
             </div>
             <div className="flex items-center gap-6 text-gray-400">
                 <span className="text-gray-500 text-sm">Hola <span className="font-bold text-[#0E2655]">{user ? user.name : '...'}</span></span>
-                <HouseIcon className="w-5 h-5" />
+                <Link href="/dashboard" className="flex items-center"><HouseIcon className="w-5 h-5" /></Link>
+                
                 <BellIcon className="w-5 h-5" />
                 <NavigationMenu>
                     <NavigationMenuList>
