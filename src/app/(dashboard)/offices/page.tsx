@@ -60,7 +60,11 @@ export default function OfficesPage() {
         const data = await res.json();
         setCompanies(data.companies || []);
       }
-    } catch {}
+    } catch (e: any) {
+      setError(e.message);
+    }finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
