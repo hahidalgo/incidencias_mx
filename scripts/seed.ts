@@ -34,8 +34,8 @@ async function main() {
     data: {
       company_id: company.id,
       office_id: office.id,
-      user_name: 'Sistem Admin',
-      user_email: 'sysamdin@localhost.dev',
+      user_name: 'Juan Perez',
+      user_email: 'juan.perez@ejemplo.com',
       user_password: hashedPassword,
       user_status: 1,
       user_rol: 1,
@@ -145,7 +145,7 @@ async function main() {
 
   console.log('🎉 Seed completado exitosamente!');
   console.log('\n📋 Credenciales para probar el login:');
-  console.log('   Email: juan.perez@ejemplo.com');
+  console.log(`   Email: ${user.user_email}`);
   console.log('   Contraseña: 123456');
 }
 
