@@ -1,66 +1,105 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
-import { SquarePen, Trash, Plus  } from 'lucide-react';
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
+import { toast } from 'sonner';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
+import { Button } from '@/registry/new-york-v4/ui/button';
+import { Input } from '@/registry/new-york-v4/ui/input';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/registry/new-york-v4/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/registry/new-york-v4/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/registry/new-york-v4/ui/alert-dialog';
+import { Badge } from '@/registry/new-york-v4/ui/badge';
+import { Label } from '@/registry/new-york-v4/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/registry/new-york-v4/ui/select';
+
 interface Company {
   id: string;
   company_name: string;
   company_status: number;
-  created_at: string;
-  updated_at: string;
 }
 
-const initialForm = { company_name: '', company_status: 1 };
+interface CompanyForm {
+  company_name: string;
+  company_status: number;
+}
+
+const initialForm: CompanyForm = { company_name: '', company_status: 1 };
+const PAGE_SIZE = 7;
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [showModal, setShowModal] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [form, setForm] = useState<{ company_name: string; company_status: number }>(initialForm);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
+  const [form, setForm] = useState<CompanyForm>(initialForm);
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchCompanies = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const params = new URLSearchParams({
         page: String(page),
-        pageSize: String(pageSize),
-        search,
+        pageSize: String(PAGE_SIZE),
+        search: debouncedSearch,
       });
-      const res = await fetch(`/api/companies?${params.toString()}`);
-      if (!res.ok) throw new Error('Sin resultados');
+      const res = await fetch(`/api/companies?${params.toString()}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('No se pudieron obtener las compañías.');
       const data = await res.json();
-      setCompanies(data.companies);
-      setTotalPages(data.totalPages);
-      setTotal(data.total);
+      setCompanies(data.companies || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, search]);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchCompanies();
@@ -72,173 +111,174 @@ export default function CompaniesPage() {
   };
 
   const openCreate = () => {
-    setForm(initialForm);
     setIsEdit(false);
-    setEditId(null);
-    setShowModal(true);
+    setCurrentCompany(null);
+    setForm(initialForm);
+    setIsModalOpen(true);
   };
 
   const openEdit = (company: Company) => {
-    setForm({ company_name: company.company_name, company_status: company.company_status });
     setIsEdit(true);
-    setEditId(company.id);
-    setShowModal(true);
+    setCurrentCompany(company);
+    setForm({
+      company_name: company.company_name,
+      company_status: company.company_status,
+    });
+    setIsModalOpen(true);
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: name === 'company_status' ? Number(value) : value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: keyof CompanyForm, value: string | number) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setActionLoading(true);
     try {
       const method = isEdit ? 'PUT' : 'POST';
-      const body = isEdit ? { ...form, id: editId } : form;
+      const body = isEdit ? { ...form, id: currentCompany?.id } : form;
+
       const res = await fetch('/api/companies', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error('Error al guardar compañía');
-      setShowModal(false);
-      setForm(initialForm);
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al guardar la compañía.');
+
+      toast.success(`Compañía ${isEdit ? 'actualizada' : 'creada'} con éxito.`);
+      setIsModalOpen(false);
       fetchCompanies();
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    setLoading(true);
-    setError(null);
+    setActionLoading(true);
     try {
       const res = await fetch('/api/companies', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: deleteId }),
       });
-      if (!res.ok) throw new Error('Error al eliminar compañía');
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al eliminar la compañía.');
+
+      toast.success('Compañía eliminada con éxito.');
       setDeleteId(null);
-      setConfirmDelete(false);
+      setConfirmDeleteOpen(false);
       fetchCompanies();
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ fontWeight: 'bold', fontSize: '2rem', marginRight: '1rem' }}>Empresas</h2>
-        <Button className='bg-blue-900 text-white' onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Plus className='text-white' />
-        </Button>
-        <div className='flex-1'  />
-        <label style={{ fontSize: 20, color: '#666', marginRight: 8 }}>Buscar:</label>
-        <input type="text" value={search} onChange={handleSearch} style={{ border: '1px solid #aaa', borderRadius: 4, padding: '4px 8px', fontSize: 16 }} />
+    <div className="p-4 md:p-8 space-y-4">
+      <div className="flex items-center">
+        <h2 className="text-3xl font-bold">Compañías</h2>
+        <div className="ml-auto flex items-center gap-2">
+          <Input placeholder="Buscar compañía..." value={search} onChange={handleSearch} className="w-64" />
+          <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Nueva Compañía</Button>
+        </div>
       </div>
-      {loading ? (
-        <div className='text-center text-gray-700 p-2 font-bold'>Cargando...</div>
-      ) : error ? (
-        <div  className='text-center text-red-700 p-2 font-bold' >{error}</div>
-      ) : (
-        <>
-        <Table className='table-auto border-collapse border border-gray-300'>
+      <div className="border rounded-lg">
+        <Table>
           <TableHeader>
-            <TableRow className='text-white text-center' style={{ background: '#11224C'}}>
-              <TableHead className="w-[25px] text-white text-center font-bold">{''}</TableHead>
-              <TableHead className='text-white font-bold'>Nombre</TableHead>
-              <TableHead className='text-white text-center font-bold'>Status</TableHead>
-              <TableHead className=" w-[150px] text-whitetext-center font-bold">Acciones</TableHead>
+            <TableRow>
+              <TableHead>Nombre</TableHead>
+              <TableHead className="w-32">Status</TableHead>
+              <TableHead className="w-32 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies.map((companies)=>(
-              <TableRow key={companies.id}>
-                <TableCell className="w-[25px] text-center">{''}</TableCell>
-                <TableCell>{companies.company_name}</TableCell>
-                <TableCell className="text-center"> 
-                  <Badge className="text-center text-white" style={{ background: companies.company_status === 1 ? '#218838' : '#C82333',}}>
-                    
-                      {companies.company_status === 1 ? 'ACTIVO' : 'INACTIVO'}
+            {loading ? (
+              <TableRow><TableCell colSpan={3} className="text-center h-24">Cargando...</TableCell></TableRow>
+            ) : companies.length === 0 ? (
+              <TableRow><TableCell colSpan={3} className="text-center h-24">No se encontraron compañías.</TableCell></TableRow>
+            ) : (
+              companies.map((company) => (
+                <TableRow key={company.id}>
+                  <TableCell className="font-medium">{company.company_name}</TableCell>
+                  <TableCell>
+                    <Badge variant={company.company_status === 1 ? 'default' : 'destructive'}>
+                      {company.company_status === 1 ? 'Activo' : 'Inactivo'}
                     </Badge>
-                </TableCell>
-                <TableCell className="flex flex-wrap items-center gap-2 md:flex-row justify-center">
-                  <Button title="Editar" onClick={() => openEdit(companies)} className='bg-blue-700 text-white'>
-                    <SquarePen size={16} className='text-white' />
-                  </Button>
-                  <Button title="Eliminar" onClick={() => { setDeleteId(companies.id); setConfirmDelete(true); }}  className='bg-red-700 text-white'>
-                    <Trash size={16} color="white" />
-                  </Button> 
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(company)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { setDeleteId(company.id); setConfirmDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex justify-between items-center text-sm text-muted-foreground">
+        <div>Total: {total} compañías</div>
+        <div className="flex items-center gap-2">
+          <span>Página {page} de {totalPages}</span>
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Anterior</Button>
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Siguiente</Button>
+        </div>
+      </div>
 
-
-
-          {/* Paginación */}
-
-          
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
-            <Button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} variant="ghost"
-                    style={{ padding: '4px 12px', borderRadius: 4, border: '0px solid #11224C', background: page === 1 ? '#eee' : '#11224C', color: page === 1 ? '#888' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>
-              Anterior
-            </Button>
-            <span style={{ fontSize: 14 }}>Página {page} de {totalPages}</span>
-            <Button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} variant="ghost"
-                    style={{ padding: '4px 12px', borderRadius: 4, border: '0px solid #11224C', background: page === totalPages ? '#eee' : '#11224C', color: page === totalPages ? '#888' : 'white', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>Siguiente</Button>
-          </div>
-          <div style={{ textAlign: 'right', color: '#666', fontSize: 14, marginTop: 4 }}>Total: {total} empresas</div>
-        </> 
-      )}
-
-      {/* Modal Crear/Editar */}
-      {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <form onSubmit={handleSubmit} style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>{isEdit ? 'Editar empresa' : 'Nueva empresa'}</h3>
-            <div style={{ marginBottom: 16 }}>
-              <label>Nombre:</label>
-              <input name="company_name" value={form.company_name} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader><DialogTitle>{isEdit ? 'Editar Compañía' : 'Nueva Compañía'}</DialogTitle></DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="company_name" className="text-right">Nombre</Label>
+                <Input id="company_name" name="company_name" value={form.company_name} onChange={handleFormChange} required className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="company_status" className="text-right">Status</Label>
+                <Select onValueChange={(value) => handleSelectChange('company_status', Number(value))} value={String(form.company_status)}>
+                  <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="1">Activo</SelectItem><SelectItem value="0">Inactivo</SelectItem></SelectContent>
+                </Select>
+              </div>
             </div>
-            <div style={{ marginBottom: 16 }}>
-              <label>Status:</label>
-              <select name="company_status" value={form.company_status} onChange={handleFormChange} style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }}>
-                <option value={1}>ACTIVO</option>
-                <option value={0}>INACTIVO</option>
-              </select>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <Button type="button" onClick={() => setShowModal(false)} className='bg-gray-300 text-black'  >Cancelar</Button>
-              <Button type="submit" className='bg-blue-900 text-white font-bold' >{isEdit ? 'Guardar' : 'Crear'}</Button>
-            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+              <Button type="submit" disabled={actionLoading}>
+                {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEdit ? 'Guardar Cambios' : 'Crear Compañía'}
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {/* Modal Confirmar Eliminar */}
-      {confirmDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>¿Eliminar la empresa ?</h3>
-            <p>Esta acción no se puede deshacer.</p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-              <Button type="button" onClick={() => { setDeleteId(null); setConfirmDelete(false); }} className='bg-gray-300 text-black'>Cancelar</Button>
-              <Button type="button" onClick={handleDelete} className='bg-red-700 text-white'>Eliminar</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro de que quieres eliminar esta compañía?</AlertDialogTitle>
+            <AlertDialogDescription>Esta acción no se puede deshacer. Esto eliminará permanentemente la compañía y todas sus oficinas y empleados asociados.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={actionLoading} className="bg-destructive hover:bg-destructive/90">
+              {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  );  
-} 
+  );
+}

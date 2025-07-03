@@ -66,6 +66,9 @@ const NavigationBar = () => {
                                         <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded">Oficinas</Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
+                                        <Link href="/incidents" className="px-4 py-2 hover:bg-accent rounded">Incidentes</Link>
+                                    </NavigationMenuLink>
+                                    <NavigationMenuLink asChild>
                                         <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded">Empleados</Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
