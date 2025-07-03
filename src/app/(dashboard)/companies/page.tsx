@@ -1,6 +1,19 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
+import { SquarePen, Trash, Plus  } from 'lucide-react';
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 interface Company {
   id: string;
   company_name: string;
@@ -124,68 +137,92 @@ export default function CompaniesPage() {
   return (
     <div style={{ padding: '2rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ fontWeight: 'bold', fontSize: '2rem', marginRight: '1rem' }}>Compañías</h2>
-        <button onClick={openCreate} style={{ background: '#11224C', color: 'white', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, border: 'none', cursor: 'pointer' }}>+</button>
-        <div style={{ flex: 1 }} />
+        <h2 style={{ fontWeight: 'bold', fontSize: '2rem', marginRight: '1rem' }}>Empresas</h2>
+        <Button className='bg-blue-900 text-white' onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Plus className='text-white' />
+        </Button>
+        <div className='flex-1'  />
         <label style={{ fontSize: 20, color: '#666', marginRight: 8 }}>Buscar:</label>
         <input type="text" value={search} onChange={handleSearch} style={{ border: '1px solid #aaa', borderRadius: 4, padding: '4px 8px', fontSize: 16 }} />
       </div>
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando...</div>
+        <div className='text-center text-gray-700 p-2 font-bold'>Cargando...</div>
       ) : error ? (
-        <div style={{ color: 'red', textAlign: 'center', padding: '2rem' }}>{error}</div>
+        <div  className='text-center text-red-700 p-2 font-bold' >{error}</div>
       ) : (
         <>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'inherit' }}>
-            <thead>
-              <tr style={{ background: '#11224C', color: 'white' }}>
-                <th style={{ padding: '8px' }}>ID</th>
-                <th style={{ padding: '8px' }}>Nombre</th>
-                <th style={{ padding: '8px' }}>Status</th>
-                <th style={{ padding: '8px' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {companies.length === 0 ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>No hay compañías</td></tr>
-              ) : companies.map((company, idx) => (
-                <tr key={company.id} style={{ background: idx % 2 === 0 ? '#F5F6FA' : 'white' }}>
-                  <td style={{ fontWeight: 'bold', color: '#888', padding: '8px', textAlign: 'center' }}>{company.id.slice(0, 4)}</td>
-                  <td style={{ padding: '8px' }}>{company.company_name}</td>
-                  <td style={{ padding: '8px' }}>
-                    <span style={{
-                      background: company.company_status === 1 ? '#218838' : '#C82333',
-                      color: 'white',
-                      borderRadius: 8,
-                      padding: '2px 16px',
-                      fontWeight: 'bold',
-                      fontSize: 16,
-                    }}>
-                      {company.company_status === 1 ? 'ACTIVO' : 'INACTIVO'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '8px', display: 'flex', gap: 8 }}>
-                    <button title="Editar" onClick={() => openEdit(company)} style={{ width: 24, height: 24, borderRadius: 4, background: '#218838', border: 'none', cursor: 'pointer' }} />
-                    <button title="Eliminar" onClick={() => { setDeleteId(company.id); setConfirmDelete(true); }} style={{ width: 24, height: 24, borderRadius: 4, background: '#C82333', border: 'none', cursor: 'pointer' }} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <Table className='table-auto border-collapse border border-gray-300'>
+          <TableHeader>
+            <TableRow className='text-white text-center' style={{ background: '#11224C'}}>
+              <TableHead className="w-[25px] text-white text-center font-bold">{''}</TableHead>
+              <TableHead className='text-white font-bold'>Nombre</TableHead>
+              <TableHead className='text-white text-center font-bold'>Status</TableHead>
+              <TableHead className=" w-[150px] text-whitetext-center font-bold">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {companies.map((companies)=>(
+              <TableRow key={companies.id}>
+                <TableCell className="w-[25px] text-center">{''}</TableCell>
+                <TableCell>{companies.company_name}</TableCell>
+                <TableCell className="text-center"> 
+                  <Badge className="text-center text-white" style={{ background: companies.company_status === 1 ? '#218838' : '#C82333',}}>
+                    
+                      {companies.company_status === 1 ? 'ACTIVO' : 'INACTIVO'}
+                    </Badge>
+                </TableCell>
+                <TableCell className="flex flex-wrap items-center gap-2 md:flex-row justify-center">
+                  <Button title="Editar" onClick={() => openEdit(companies)} className='bg-blue-700 text-white'>
+                    <SquarePen size={16} className='text-white' />
+                  </Button>
+                  <Button title="Eliminar" onClick={() => { setDeleteId(companies.id); setConfirmDelete(true); }}  className='bg-red-700 text-white'>
+                    <Trash size={16} color="white" />
+                  </Button> 
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+
+
           {/* Paginación */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
+
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+                Anterior
+              </PaginationPrevious>
+              <PaginationItem>
+                <PaginationLink>{page}</PaginationLink>
+              </PaginationItem>
+              {totalPages > 1 && (
+                <>
+                  <PaginationEllipsis />
+                  <PaginationItem>
+                    <PaginationLink>{totalPages}</PaginationLink>
+                  </PaginationItem>
+                </>
+              )}
+              <PaginationNext onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+                Siguiente
+              </PaginationNext>
+            </PaginationContent>
+          </Pagination>
+          {/*<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === 1 ? '#eee' : '#11224C', color: page === 1 ? '#888' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>Anterior</button>
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>Página {page} de {totalPages}</span>
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === totalPages ? '#eee' : '#11224C', color: page === totalPages ? '#888' : 'white', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>Siguiente</button>
-          </div>
-          <div style={{ textAlign: 'right', color: '#666', fontSize: 14, marginTop: 4 }}>Total: {total} compañías</div>
-        </>
+          </div>*/}
+          <div style={{ textAlign: 'right', color: '#666', fontSize: 14, marginTop: 4 }}>Total: {total} empresas</div>
+        </> 
       )}
+
       {/* Modal Crear/Editar */}
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <form onSubmit={handleSubmit} style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>{isEdit ? 'Editar compañía' : 'Nueva compañía'}</h3>
+            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>{isEdit ? 'Editar empresa' : 'Nueva empresa'}</h3>
             <div style={{ marginBottom: 16 }}>
               <label>Nombre:</label>
               <input name="company_name" value={form.company_name} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
@@ -198,25 +235,26 @@ export default function CompaniesPage() {
               </select>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button type="button" onClick={() => setShowModal(false)} style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #888', background: '#eee', color: '#333' }}>Cancelar</button>
-              <button type="submit" style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#11224C', color: 'white', fontWeight: 'bold' }}>{isEdit ? 'Guardar' : 'Crear'}</button>
+              <Button type="button" onClick={() => setShowModal(false)} className='bg-gray-300 text-black'  >Cancelar</Button>
+              <Button type="submit" className='bg-blue-900 text-white font-bold' >{isEdit ? 'Guardar' : 'Crear'}</Button>
             </div>
           </form>
         </div>
       )}
+
       {/* Modal Confirmar Eliminar */}
       {confirmDelete && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>¿Eliminar compañía?</h3>
+            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>¿Eliminar la empresa ?</h3>
             <p>Esta acción no se puede deshacer.</p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-              <button type="button" onClick={() => { setDeleteId(null); setConfirmDelete(false); }} style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #888', background: '#eee', color: '#333' }}>Cancelar</button>
-              <button type="button" onClick={handleDelete} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#C82333', color: 'white', fontWeight: 'bold' }}>Eliminar</button>
+              <Button type="button" onClick={() => { setDeleteId(null); setConfirmDelete(false); }} className='bg-gray-300 text-black'>Cancelar</Button>
+              <Button type="button" onClick={handleDelete} className='bg-red-700 text-white'>Eliminar</Button>
             </div>
           </div>
         </div>
       )}
     </div>
-  );
+  );  
 } 
