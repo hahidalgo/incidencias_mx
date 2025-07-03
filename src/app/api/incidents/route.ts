@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching incidents:', error);
+
     return NextResponse.json(
       { message: 'Error al obtener las incidencias.' },
       { status: 500 }
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newIncident, { status: 201 });
   } catch (error) {
     console.error('Error creating incident:', error);
+
     return NextResponse.json(
       { message: 'Error al crear la incidencia.' },
       { status: 500 }
@@ -109,6 +111,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updatedIncident);
   } catch (error) {
     console.error('Error updating incident:', error);
+
     return NextResponse.json(
       { message: 'Error al actualizar la incidencia.' },
       { status: 500 }
@@ -143,6 +146,7 @@ export async function DELETE(request: NextRequest) {
         { status: 409 } // Conflict
       );
     }
+    
     return NextResponse.json(
       { message: 'Error al eliminar la incidencia.' },
       { status: 500 }

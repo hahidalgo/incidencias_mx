@@ -17,6 +17,7 @@ export function middleware(request: NextRequest) {
         if (token && pathname.startsWith('/login')) {
             return NextResponse.redirect(new URL('/', request.url));
         }
+
         // En cualquier otro caso para una ruta pública, permitir el acceso.
         return NextResponse.next();
     }
@@ -30,6 +31,7 @@ export function middleware(request: NextRequest) {
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             );
         }
+        
         // Para las páginas, redirigir al login.
         return NextResponse.redirect(new URL('/login', request.url));
     }

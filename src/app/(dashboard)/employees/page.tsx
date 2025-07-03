@@ -91,6 +91,7 @@ export default function EmployeesPage() {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    
     return () => clearTimeout(timer);
   }, [search]);
 

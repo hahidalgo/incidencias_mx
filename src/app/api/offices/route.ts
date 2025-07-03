@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching offices:', error);
+
     return NextResponse.json(
       { message: 'Error al obtener las oficinas.' },
       { status: 500 }
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newOffice, { status: 201 });
   } catch (error) {
     console.error('Error creating office:', error);
+
     return NextResponse.json(
       { message: 'Error al crear la oficina.' },
       { status: 500 }
@@ -104,6 +106,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updatedOffice);
   } catch (error) {
     console.error('Error updating office:', error);
+
     return NextResponse.json(
       { message: 'Error al actualizar la oficina.' },
       { status: 500 }
@@ -138,6 +141,7 @@ export async function DELETE(request: NextRequest) {
         { status: 409 } // Conflict
       );
     }
+    
     return NextResponse.json(
       { message: 'Error al eliminar la oficina.' },
       { status: 500 }
