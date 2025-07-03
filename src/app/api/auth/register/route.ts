@@ -58,6 +58,12 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
+    console.error('Error al registrar usuario:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error inesperado';
+    
+    return NextResponse.json(
+      { message: 'Error interno del servidor', error: errorMessage },
+      { status: 500 }
+    );
   }
 } 
