@@ -10,25 +10,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Edit, Copy } from "lucide-react";
 import { MovementColumn } from "./columns";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface CellActionProps {
     data: MovementColumn;
+    onEdit: (id: string) => void;
 }
 
-export const CellAction: React.FC<CellActionProps> = ({ data }) => {
-    const router = useRouter();
+export const CellAction: React.FC<CellActionProps> = ({ data, onEdit: handleEdit }) => {
+
 
     const onCopy = (id: string) => {
         navigator.clipboard.writeText(id);
-        // Aquí podrías usar un toast para notificar al usuario
-        console.log("ID del movimiento copiado:", id);
+        toast.success("ID del movimiento copiado al portapapeles.");
     };
 
     const onEdit = (id: string) => {
-        // Lógica para editar. Podría ser navegar a otra página o abrir un modal.
-        // Por ejemplo: router.push(`/movimientos/${id}`);
-        console.log("Editando movimiento:", id);
+        handleEdit(id);
     };
 
     return (

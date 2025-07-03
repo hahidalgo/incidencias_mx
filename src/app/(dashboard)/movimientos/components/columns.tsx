@@ -13,33 +13,35 @@ export type MovementColumn = {
     date: string;
 };
 
-export const columns: ColumnDef<MovementColumn>[] = [
-    {
-        accessorKey: "employeeCode",
-        header: "Código",
-    },
-    {
-        accessorKey: "employeeName",
-        header: "Trabajador",
-    },
-    {
-        accessorKey: "employeeType",
-        header: "Tipo",
-    },
-    {
-        accessorKey: "incidentCode",
-        header: "Código Incidencia",
-    },
-    {
-        accessorKey: "incidentName",
-        header: "Incidencia",
-    },
-    {
-        accessorKey: "date",
-        header: "Fecha",
-    },
-    {
-        id: "actions",
-        cell: ({ row }) => <CellAction data={row.original} />,
-    },
-];
+export const getColumns = (
+    onEdit: (id: string) => void
+): ColumnDef<MovementColumn>[] => [
+        {
+            accessorKey: "employeeCode",
+            header: "Código",
+        },
+        {
+            accessorKey: "employeeName",
+            header: "Trabajador",
+        },
+        {
+            accessorKey: "employeeType",
+            header: "Tipo",
+        },
+        {
+            accessorKey: "incidentCode",
+            header: "Código Incidencia",
+        },
+        {
+            accessorKey: "incidentName",
+            header: "Incidencia",
+        },
+        {
+            accessorKey: "date",
+            header: "Fecha",
+        },
+        {
+            id: "actions",
+            cell: ({ row }) => <CellAction data={row.original} onEdit={onEdit} />,
+        },
+    ];
