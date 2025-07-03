@@ -55,7 +55,7 @@ async function main() {
       company_id: company.id,
       office_id: office.id,
       user_name: 'System Administrator',
-      user_email: 'sysadmin@localhost.dev',
+      user_email: 'superadmin@localhost.dev',
       user_password: hashedPassword,
       user_status: 1,
       user_rol: 1,

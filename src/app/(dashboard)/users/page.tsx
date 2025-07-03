@@ -1,65 +1,175 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+
+import { Button } from "@/registry/new-york-v4/ui/button";
+import { Input } from "@/registry/new-york-v4/ui/input";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/registry/new-york-v4/ui/table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/registry/new-york-v4/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/registry/new-york-v4/ui/alert-dialog";
+import { Badge } from "@/registry/new-york-v4/ui/badge";
+import { Label } from "@/registry/new-york-v4/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/registry/new-york-v4/ui/select";
 
 interface User {
     id: string;
+    company_id: string;
+    office_id: string;
     user_name: string;
     user_email: string;
     user_status: number;
     user_rol: number;
-    company_id: string;
-    office_id: string;
-    created_at: string;
-    updated_at: string;
 }
 
-interface Company { id: string; company_name: string; }
-interface Office { id: string; office_name: string; }
+interface Company {
+    id: string;
+    company_name: string;
+}
 
-const initialForm = { user_name: '', user_email: '', user_status: 1, user_rol: 1, company_id: '', office_id: '', user_password: '' };
+interface Office {
+    id: string;
+    office_name: string;
+}
+
+interface UserForm {
+    company_id: string;
+    office_id: string;
+    user_name: string;
+    user_email: string;
+    user_password?: string;
+    user_status: number;
+    user_rol: number;
+}
+
+const initialForm: UserForm = {
+    company_id: "",
+    office_id: "",
+    user_name: "",
+    user_email: "",
+    user_password: "",
+    user_status: 1,
+    user_rol: 2,
+};
+const PAGE_SIZE = 7;
+const USER_ROLES = {
+    1: "Admin",
+    2: "Usuario",
+};
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [search, setSearch] = useState('');
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [offices, setOffices] = useState<Office[]>([]);
+    const [companyMap, setCompanyMap] = useState<Map<string, string>>(new Map());
+    const [officeMap, setOfficeMap] = useState<Map<string, string>>(new Map());
+
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
     const [page, setPage] = useState(1);
-    const [pageSize] = useState(7);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
-    const [showModal, setShowModal] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
-    const [form, setForm] = useState<any>(initialForm);
-    const [editId, setEditId] = useState<string | null>(null);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [confirmDelete, setConfirmDelete] = useState(false);
-    const [companies, setCompanies] = useState<Company[]>([]);
 
-    const fetchUsers = async () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [form, setForm] = useState<UserForm>(initialForm);
+
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const fetchUsers = useCallback(async () => {
         setLoading(true);
-        setError(null);
         try {
             const params = new URLSearchParams({
                 page: String(page),
-                pageSize: String(pageSize),
-                search,
+                pageSize: String(PAGE_SIZE),
+                search: debouncedSearch,
             });
             const res = await fetch(`/api/users?${params.toString()}`);
-            if (!res.ok) throw new Error('Error al obtener usuarios');
+            if (!res.ok) throw new Error("No se pudieron obtener los usuarios.");
             const data = await res.json();
-            setUsers(data.users);
-            setTotalPages(data.totalPages);
-            setTotal(data.total);
+            setUsers(data.users || []);
+            setTotalPages(data.totalPages || 1);
+            setTotal(data.total || 0);
         } catch (e: any) {
-            setError(e.message);
+            toast.error(e.message);
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, debouncedSearch]);
 
     useEffect(() => {
         fetchUsers();
-    }, [page, search]);
+    }, [fetchUsers]);
+
+    useEffect(() => {
+        const fetchRelatedData = async () => {
+            try {
+                const [companiesRes, officesRes] = await Promise.all([
+                    fetch("/api/companies?page=1&pageSize=1000"),
+                    fetch("/api/offices?page=1&pageSize=1000"),
+                ]);
+
+                if (!companiesRes.ok)
+                    throw new Error("No se pudieron obtener las empresas.");
+                const { companies: companyList = [] } = await companiesRes.json();
+                setCompanies(companyList);
+                setCompanyMap(
+                    new Map(companyList.map((c: Company) => [c.id, c.company_name]))
+                );
+
+                if (!officesRes.ok)
+                    throw new Error("No se pudieron obtener las oficinas.");
+                const { offices: officeList = [] } = await officesRes.json();
+                setOffices(officeList);
+                setOfficeMap(
+                    new Map(officeList.map((o: Office) => [o.id, o.office_name]))
+                );
+            } catch (e: any) {
+                toast.error(e.message);
+            }
+        };
+        fetchRelatedData();
+    }, []);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value);
@@ -67,203 +177,397 @@ export default function UsersPage() {
     };
 
     const openCreate = () => {
-        setForm(initialForm);
         setIsEdit(false);
-        setEditId(null);
-        setShowModal(true);
+        setCurrentUser(null);
+        setForm(initialForm);
+        setIsModalOpen(true);
     };
 
     const openEdit = (user: User) => {
-        setForm({
-            user_name: user.user_name,
-            user_email: user.user_email,
-            user_status: user.user_status,
-            user_rol: user.user_rol,
-            company_id: user.company_id,
-            office_id: user.office_id,
-            user_password: '',
-        });
         setIsEdit(true);
-        setEditId(user.id);
-        setShowModal(true);
+        setCurrentUser(user);
+        setForm({ ...user, user_password: "" });
+        setIsModalOpen(true);
     };
 
-    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setForm((prev: any) => ({ ...prev, [name]: name === 'user_status' || name === 'user_rol' ? Number(value) : value }));
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSelectChange = (name: keyof UserForm, value: string | number) => {
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        setError(null);
+        setActionLoading(true);
         try {
-            const method = isEdit ? 'PUT' : 'POST';
-            const body = isEdit ? { ...form, id: editId } : form;
-            if (isEdit) delete body.user_password;
-            const res = await fetch('/api/users', {
+            const method = isEdit ? "PUT" : "POST";
+            const body: any = { ...form, id: isEdit ? currentUser?.id : undefined };
+            if (!body.user_password) delete body.user_password;
+
+            const res = await fetch("/api/users", {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             });
-            if (!res.ok) throw new Error('Error al guardar usuario');
-            setShowModal(false);
-            setForm(initialForm);
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.message || "Error al guardar el usuario.");
+
+            toast.success(`Usuario ${isEdit ? "actualizado" : "creado"} con éxito.`);
+            setIsModalOpen(false);
             fetchUsers();
         } catch (e: any) {
-            setError(e.message);
+            toast.error(e.message);
         } finally {
-            setLoading(false);
+            setActionLoading(false);
         }
     };
 
     const handleDelete = async () => {
         if (!deleteId) return;
-        setLoading(true);
-        setError(null);
+        setActionLoading(true);
         try {
-            const res = await fetch('/api/users', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/users", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: deleteId }),
             });
-            if (!res.ok) throw new Error('Error al eliminar usuario');
+            const data = await res.json();
+            if (!res.ok)
+                throw new Error(data.message || "Error al eliminar el usuario.");
+
+            toast.success("Usuario eliminado con éxito.");
             setDeleteId(null);
-            setConfirmDelete(false);
+            setConfirmDeleteOpen(false);
             fetchUsers();
         } catch (e: any) {
-            setError(e.message);
+            toast.error(e.message);
         } finally {
-            setLoading(false);
+            setActionLoading(false);
         }
     };
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ fontWeight: 'bold', fontSize: '2rem', marginRight: '1rem' }}>Usuarios</h2>
-                <button onClick={openCreate} style={{ background: '#11224C', color: 'white', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, border: 'none', cursor: 'pointer' }}>+</button>
-                <div style={{ flex: 1 }} />
-                <label style={{ fontSize: 20, color: '#666', marginRight: 8 }}>Buscar:</label>
-                <input type="text" value={search} onChange={handleSearch} style={{ border: '1px solid #aaa', borderRadius: 4, padding: '4px 8px', fontSize: 16 }} />
+        <div className="p-4 md:p-8 space-y-4">
+            <div className="flex items-center">
+                <h2 className="text-3xl font-bold">Usuarios</h2>
+                <div className="ml-auto flex items-center gap-2">
+                    <Input
+                        placeholder="Buscar usuario..."
+                        value={search}
+                        onChange={handleSearch}
+                        className="w-64"
+                    />
+                    <Button onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> Nuevo Usuario
+                    </Button>
+                </div>
             </div>
-            {loading ? (
-                <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando...</div>
-            ) : error ? (
-                <div style={{ color: 'red', textAlign: 'center', padding: '2rem' }}>{error}</div>
-            ) : (
-                <>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'inherit' }}>
-                        <thead>
-                            <tr style={{ background: '#11224C', color: 'white' }}>
-                                <th style={{ padding: '8px' }}>ID</th>
-                                <th style={{ padding: '8px' }}>Nombre</th>
-                                <th style={{ padding: '8px' }}>E-mail</th>
-                                <th style={{ padding: '8px' }}>Empresa</th>
-                                <th style={{ padding: '8px' }}>Oficina</th>
-                                <th style={{ padding: '8px' }}>Rol</th>
-                                <th style={{ padding: '8px' }}>Status</th>
-                                <th style={{ padding: '8px' }}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.length === 0 ? (
-                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>No hay usuarios</td></tr>
-                            ) : users.map((user, idx) => (
-                                <tr key={user.id} style={{ background: idx % 2 === 0 ? '#F5F6FA' : 'white' }}>
-                                    <td style={{ fontWeight: 'bold', color: '#888', padding: '8px', textAlign: 'center' }}>{user.id.slice(0, 4)}</td>
-                                    <td style={{ padding: '8px' }}>{user.user_name}</td>
-                                    <td style={{ padding: '8px' }}>{user.user_email}</td>
-                                    <td style={{ padding: '8px' }}>{user.company_id}</td>
-                                    <td style={{ padding: '8px' }}>{user.office_id}</td>
-                                    <td style={{ padding: '8px' }}>{user.user_rol}</td>
-                                    <td style={{ padding: '8px' }}>
-                                        <span style={{
-                                            background: user.user_status === 1 ? '#218838' : '#C82333',
-                                            color: 'white',
-                                            borderRadius: 8,
-                                            padding: '2px 16px',
-                                            fontWeight: 'bold',
-                                            fontSize: 16,
-                                        }}>
-                                            {user.user_status === 1 ? 'ACTIVO' : 'INACTIVO'}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '8px', display: 'flex', gap: 8 }}>
-                                        <button title="Editar" onClick={() => openEdit(user)} style={{ width: 24, height: 24, borderRadius: 4, background: '#218838', border: 'none', cursor: 'pointer' }} />
-                                        <button title="Eliminar" onClick={() => { setDeleteId(user.id); setConfirmDelete(true); }} style={{ width: 24, height: 24, borderRadius: 4, background: '#C82333', border: 'none', cursor: 'pointer' }} />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {/* Paginación */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === 1 ? '#eee' : '#11224C', color: page === 1 ? '#888' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>Anterior</button>
-                        <span style={{ fontWeight: 'bold', fontSize: 16 }}>Página {page} de {totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === totalPages ? '#eee' : '#11224C', color: page === totalPages ? '#888' : 'white', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>Siguiente</button>
-                    </div>
-                    <div style={{ textAlign: 'right', color: '#666', fontSize: 14, marginTop: 4 }}>Total: {total} usuarios</div>
-                </>
-            )}
-            {/* Modal Crear/Editar */}
-            {showModal && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <form onSubmit={handleSubmit} style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-                        <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>{isEdit ? 'Editar usuario' : 'Nuevo usuario'}</h3>
-                        <div style={{ marginBottom: 16 }}>
-                            <label>Nombre:</label>
-                            <input name="user_name" value={form.user_name} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-                        </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <label>Email:</label>
-                            <input name="user_email" type="email" value={form.user_email} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-                        </div>
-                        {!isEdit && (
-                            <div style={{ marginBottom: 16 }}>
-                                <label>Contraseña:</label>
-                                <input name="user_password" type="password" value={form.user_password} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-                            </div>
+
+            <div className="border rounded-lg">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Empresa</TableHead>
+                            <TableHead>Oficina</TableHead>
+                            <TableHead className="w-24">Rol</TableHead>
+                            <TableHead className="w-24">Status</TableHead>
+                            <TableHead className="w-32 text-right">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="text-center h-24">
+                                    Cargando...
+                                </TableCell>
+                            </TableRow>
+                        ) : users.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="text-center h-24">
+                                    No se encontraron usuarios.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            users.map((user) => (
+                                <TableRow key={user.id}>
+                                    <TableCell className="font-medium">
+                                        {user.user_name}
+                                    </TableCell>
+                                    <TableCell>{user.user_email}</TableCell>
+                                    <TableCell>
+                                        {companyMap.get(user.company_id) || "N/A"}
+                                    </TableCell>
+                                    <TableCell>
+                                        {officeMap.get(user.office_id) || "N/A"}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={user.user_rol === 1 ? "secondary" : "outline"}
+                                        >
+                                            {USER_ROLES[user.user_rol as keyof typeof USER_ROLES] ||
+                                                "N/A"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={
+                                                user.user_status === 1 ? "default" : "destructive"
+                                            }
+                                        >
+                                            {user.user_status === 1 ? "Activo" : "Inactivo"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => openEdit(user)}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                setDeleteId(user.id);
+                                                setConfirmDeleteOpen(true);
+                                            }}
+                                        >
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
                         )}
-                        <div style={{ marginBottom: 16 }}>
-                            <label>Empresa:</label>
-                            <input name="company_id" value={form.company_id} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
+                    </TableBody>
+                </Table>
+            </div>
+
+            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                <div>Total: {total} usuarios</div>
+                <div className="flex items-center gap-2">
+                    <span>
+                        Página {page} de {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        Anterior
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                    >
+                        Siguiente
+                    </Button>
+                </div>
+            </div>
+
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="sm:max-w-[480px]">
+                    <form onSubmit={handleSubmit}>
+                        <DialogHeader>
+                            <DialogTitle>
+                                {isEdit ? "Editar Usuario" : "Nuevo Usuario"}
+                            </DialogTitle>
+                            {isEdit && (
+                                <DialogDescription>
+                                    Deje la contraseña en blanco para no cambiarla.
+                                </DialogDescription>
+                            )}
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="user_name" className="text-right">
+                                    Nombre
+                                </Label>
+                                <Input
+                                    id="user_name"
+                                    name="user_name"
+                                    value={form.user_name}
+                                    onChange={handleFormChange}
+                                    required
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="user_email" className="text-right">
+                                    Email
+                                </Label>
+                                <Input
+                                    id="user_email"
+                                    name="user_email"
+                                    type="email"
+                                    value={form.user_email}
+                                    onChange={handleFormChange}
+                                    required
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="user_password" className="text-right">
+                                    Contraseña
+                                </Label>
+                                <Input
+                                    id="user_password"
+                                    name="user_password"
+                                    type="password"
+                                    value={form.user_password || ""}
+                                    onChange={handleFormChange}
+                                    required={!isEdit}
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="company_id" className="text-right">
+                                    Empresa
+                                </Label>
+                                <Select
+                                    required
+                                    onValueChange={(value) =>
+                                        handleSelectChange("company_id", value)
+                                    }
+                                    value={form.company_id}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Selecciona una empresa" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {companies.map((c) => (
+                                            <SelectItem key={c.id} value={c.id}>
+                                                {c.company_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="office_id" className="text-right">
+                                    Oficina
+                                </Label>
+                                <Select
+                                    required
+                                    onValueChange={(value) =>
+                                        handleSelectChange("office_id", value)
+                                    }
+                                    value={form.office_id}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Selecciona una oficina" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {offices.map((o) => (
+                                            <SelectItem key={o.id} value={o.id}>
+                                                {o.office_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="user_rol" className="text-right">
+                                    Rol
+                                </Label>
+                                <Select
+                                    onValueChange={(value) =>
+                                        handleSelectChange("user_rol", Number(value))
+                                    }
+                                    value={String(form.user_rol)}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(USER_ROLES).map(([key, value]) => (
+                                            <SelectItem key={key} value={key}>
+                                                {value}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="user_status" className="text-right">
+                                    Status
+                                </Label>
+                                <Select
+                                    onValueChange={(value) =>
+                                        handleSelectChange("user_status", Number(value))
+                                    }
+                                    value={String(form.user_status)}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1">Activo</SelectItem>
+                                        <SelectItem value="0">Inactivo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <label>Oficina:</label>
-                            <input name="office_id" value={form.office_id} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-                        </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <label>Rol:</label>
-                            <input name="user_rol" type="number" value={form.user_rol} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-                        </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <label>Status:</label>
-                            <select name="user_status" value={form.user_status} onChange={handleFormChange} style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }}>
-                                <option value={1}>ACTIVO</option>
-                                <option value={0}>INACTIVO</option>
-                            </select>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                            <button type="button" onClick={() => setShowModal(false)} style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #888', background: '#eee', color: '#333' }}>Cancelar</button>
-                            <button type="submit" style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#11224C', color: 'white', fontWeight: 'bold' }}>{isEdit ? 'Guardar' : 'Crear'}</button>
-                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={actionLoading}>
+                                {actionLoading && (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                {isEdit ? "Guardar Cambios" : "Crear Usuario"}
+                            </Button>
+                        </DialogFooter>
                     </form>
-                </div>
-            )}
-            {/* Modal Confirmar Eliminar */}
-            {confirmDelete && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-                        <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>¿Eliminar usuario?</h3>
-                        <p>Esta acción no se puede deshacer.</p>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-                            <button type="button" onClick={() => { setDeleteId(null); setConfirmDelete(false); }} style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #888', background: '#eee', color: '#333' }}>Cancelar</button>
-                            <button type="button" onClick={handleDelete} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#C82333', color: 'white', fontWeight: 'bold' }}>Eliminar</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog
+                open={isConfirmDeleteOpen}
+                onOpenChange={setConfirmDeleteOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            ¿Estás seguro de que quieres eliminar este usuario?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente
+                            al usuario.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setDeleteId(null)}>
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            disabled={actionLoading}
+                            className="bg-destructive hover:bg-destructive/90"
+                        >
+                            {actionLoading ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                "Eliminar"
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
-} 
+}
