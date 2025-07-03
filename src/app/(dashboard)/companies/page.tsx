@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface Company {
   id: string;
@@ -27,7 +27,7 @@ export default function CompaniesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const fetchCompanies = async () => {
+  const fetchCompanies = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -47,12 +47,11 @@ export default function CompaniesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, search]);
 
   useEffect(() => {
     fetchCompanies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search]);
+  }, [fetchCompanies]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

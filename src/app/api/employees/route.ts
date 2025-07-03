@@ -8,16 +8,44 @@ function getTokenFromRequest(request: NextRequest) {
   return request.cookies.get('token')?.value;
 }
 
-// GET: Listar todos los empleados
+// GET: Listar todos los empleados con paginación y búsqueda
 export async function GET(request: NextRequest) {
   const token = getTokenFromRequest(request);
   if (!verifyAuthToken(token)) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
+
+  const { searchParams } = request.nextUrl;
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '7', 10);
+  const search = searchParams.get('search') || '';
+
+  const skip = (page - 1) * pageSize;
+
   try {
-    const employees = await prisma.employees.findMany();
-    
-return NextResponse.json(employees);
+    const whereClause = search
+      ? {
+          OR: [
+            { employee_name: { contains: search, mode: 'insensitive' } },
+            { employee_type: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const [employees, total] = await prisma.$transaction([
+      prisma.employees.findMany({
+        where: whereClause,
+        include: {
+          office: { select: { office_name: true } },
+        },
+        skip,
+        take: pageSize,
+        orderBy: { created_at: 'desc' },
+      }),
+      prisma.employees.count({ where: whereClause }),
+    ]);
+
+    return NextResponse.json({ employees, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     return NextResponse.json({ message: 'Error al obtener empleados' }, { status: 500 });
   }
