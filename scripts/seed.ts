@@ -9,7 +9,7 @@ async function main() {
   // Crear empresa
   const company = await prisma.companies.create({
     data: {
-      company_name: 'Playcity',
+      company_name: 'Telestar S.A.',
       company_status: 1,
     },
   });
@@ -20,12 +20,32 @@ async function main() {
   const office = await prisma.offices.create({
     data: {
       company_id: company.id,
-      office_name: 'Telestar Culiacan',
+      office_name: 'Culiacan',
       office_status: 1,
     },
   });
 
   console.log('✅ Oficina creada:', office.office_name);
+
+  const office1= await prisma.offices.create({
+    data: {
+      company_id: company.id,
+      office_name: 'Durango',
+      office_status: 1,
+    },
+  });
+
+  console.log('✅ Oficina creada:', office1.office_name);
+
+  const office2 = await prisma.offices.create({
+    data: {
+      company_id: company.id,
+      office_name: 'Merida',
+      office_status: 1,
+    },
+  });
+
+  console.log('✅ Oficina creada:', office2.office_name);
 
   // Crear usuario con contraseña hasheada
   const hashedPassword = await bcrypt.hash('123456', 10);
@@ -34,8 +54,8 @@ async function main() {
     data: {
       company_id: company.id,
       office_id: office.id,
-      user_name: 'Juan Perez',
-      user_email: 'juan.perez@ejemplo.com',
+      user_name: 'System Administrator',
+      user_email: 'sysadmin@localhost.dev',
       user_password: hashedPassword,
       user_status: 1,
       user_rol: 1,
