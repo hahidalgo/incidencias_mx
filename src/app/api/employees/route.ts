@@ -8,15 +8,44 @@ function getTokenFromRequest(request: NextRequest) {
   return request.cookies.get('token')?.value;
 }
 
-// GET: Listar todos los empleados
+// GET: Listar todos los empleados con paginación y búsqueda
 export async function GET(request: NextRequest) {
   const token = getTokenFromRequest(request);
   if (!verifyAuthToken(token)) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
+
+  const { searchParams } = request.nextUrl;
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '7', 10);
+  const search = searchParams.get('search') || '';
+
+  const skip = (page - 1) * pageSize;
+
   try {
-    const employees = await prisma.employees.findMany();
-    return NextResponse.json(employees);
+    const whereClause = search
+      ? {
+          OR: [
+            { employee_name: { contains: search, mode: 'insensitive' } },
+            { employee_type: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const [employees, total] = await prisma.$transaction([
+      prisma.employees.findMany({
+        where: whereClause,
+        include: {
+          office: { select: { office_name: true } },
+        },
+        skip,
+        take: pageSize,
+        orderBy: { created_at: 'desc' },
+      }),
+      prisma.employees.count({ where: whereClause }),
+    ]);
+
+    return NextResponse.json({ employees, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     return NextResponse.json({ message: 'Error al obtener empleados' }, { status: 500 });
   }
@@ -36,7 +65,8 @@ export async function POST(request: NextRequest) {
     const employee = await prisma.employees.create({
       data: { office_id, employee_code, employee_name, employee_type, employee_status }
     });
-    return NextResponse.json(employee);
+    
+return NextResponse.json(employee);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear empleado' }, { status: 500 });
   }
@@ -57,7 +87,8 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: { office_id, employee_code, employee_name, employee_type, employee_status }
     });
-    return NextResponse.json(employee);
+    
+return NextResponse.json(employee);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar empleado' }, { status: 500 });
   }
@@ -75,7 +106,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.employees.delete({ where: { id } });
-    return NextResponse.json({ message: 'Empleado eliminado correctamente' });
+    
+return NextResponse.json({ message: 'Empleado eliminado correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar empleado' }, { status: 500 });
   }

@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
       path: '/',
       maxAge: 60 * 60 * 24, // 1 día
     });
-    return response;
+    
+return response;
 
   } catch (error) {
     console.error('Error en login:', error);

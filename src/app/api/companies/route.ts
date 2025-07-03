@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
     const company = await prisma.companies.create({
       data: { company_name, company_status }
     });
-    return NextResponse.json(company);
+    
+return NextResponse.json(company);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear compañía' }, { status: 500 });
   }
@@ -84,7 +85,8 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: { company_name, company_status }
     });
-    return NextResponse.json(company);
+    
+return NextResponse.json(company);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar compañía' }, { status: 500 });
   }
@@ -102,7 +104,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.companies.delete({ where: { id } });
-    return NextResponse.json({ message: 'Compañía eliminada correctamente' });
+    
+return NextResponse.json({ message: 'Compañía eliminada correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar compañía' }, { status: 500 });
   }

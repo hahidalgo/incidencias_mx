@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface Office {
   id: string;
@@ -31,22 +31,27 @@ export default function OfficesPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
 
-  const fetchOffices = async () => {
+  const fetchOffices = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/offices');
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+        search,
+      });
+      const res = await fetch(`/api/offices?${params.toString()}`);
       if (!res.ok) throw new Error('Error al obtener oficinas');
       const data = await res.json();
-      setOffices(data);
-      setTotalPages(1); // Ajustar si agregas paginación real en el endpoint
-      setTotal(data.length || 0);
+      setOffices(data.offices || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, search]);
 
   const fetchCompanies = async () => {
     try {
@@ -55,13 +60,16 @@ export default function OfficesPage() {
         const data = await res.json();
         setCompanies(data.companies || []);
       }
-    } catch {}
+    } catch (e: any) {
+      setError(e.message);
+    }finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchOffices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search]);
+  }, [fetchOffices]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

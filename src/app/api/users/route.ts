@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
     const user = await prisma.users.create({
       data: { user_name, user_email, user_password: hashedPassword, user_status, user_rol, company_id, office_id }
     });
-    return NextResponse.json(user);
+    
+return NextResponse.json(user);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear usuario' }, { status: 500 });
   }
@@ -93,7 +94,8 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: { user_name, user_email, user_status, user_rol, company_id, office_id }
     });
-    return NextResponse.json(user);
+    
+return NextResponse.json(user);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar usuario' }, { status: 500 });
   }
@@ -111,7 +113,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.users.delete({ where: { id } });
-    return NextResponse.json({ message: 'Usuario eliminado correctamente' });
+    
+return NextResponse.json({ message: 'Usuario eliminado correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar usuario' }, { status: 500 });
   }

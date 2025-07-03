@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   }
   try {
     const offices = await prisma.offices.findMany();
-    return NextResponse.json(offices);
+    
+return NextResponse.json(offices);
   } catch (error) {
     return NextResponse.json({ message: 'Error al obtener oficinas' }, { status: 500 });
   }
@@ -36,7 +37,8 @@ export async function POST(request: NextRequest) {
     const office = await prisma.offices.create({
       data: { company_id, office_name, office_status }
     });
-    return NextResponse.json(office);
+    
+return NextResponse.json(office);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear oficina' }, { status: 500 });
   }
@@ -57,7 +59,8 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: { company_id, office_name, office_status }
     });
-    return NextResponse.json(office);
+    
+return NextResponse.json(office);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar oficina' }, { status: 500 });
   }
@@ -75,7 +78,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.offices.delete({ where: { id } });
-    return NextResponse.json({ message: 'Oficina eliminada correctamente' });
+    
+return NextResponse.json({ message: 'Oficina eliminada correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar oficina' }, { status: 500 });
   }

@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface Employee {
   id: string;
@@ -10,6 +10,9 @@ interface Employee {
   employee_status: number;
   created_at: string;
   updated_at: string;
+  office?: {
+    office_name: string;
+  };
 }
 
 const initialForm = { office_id: '', employee_code: 0, employee_name: '', employee_type: '', employee_status: 1 };
@@ -30,7 +33,7 @@ export default function EmployeesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -42,20 +45,19 @@ export default function EmployeesPage() {
       const res = await fetch(`/api/employees?${params.toString()}`);
       if (!res.ok) throw new Error('Error al obtener empleados');
       const data = await res.json();
-      setEmployees(data);
-      setTotalPages(1); // Ajustar si agregas paginación real en el endpoint
-      setTotal(data.length || 0);
+      setEmployees(data.employees || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, search]);
 
   useEffect(() => {
     fetchEmployees();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search]);
+  }, [fetchEmployees]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -167,7 +169,7 @@ export default function EmployeesPage() {
                   <td style={{ padding: '8px' }}>{employee.employee_code}</td>
                   <td style={{ padding: '8px' }}>{employee.employee_name}</td>
                   <td style={{ padding: '8px' }}>{employee.employee_type}</td>
-                  <td style={{ padding: '8px' }}>{employee.office_id}</td>
+                  <td style={{ padding: '8px' }}>{employee.office?.office_name || employee.office_id.slice(0, 8) + '...'}</td>
                   <td style={{ padding: '8px' }}>
                     <span style={{
                       background: employee.employee_status === 1 ? '#218838' : '#C82333',
