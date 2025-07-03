@@ -50,7 +50,7 @@ export default function CompaniesPage() {
         search,
       });
       const res = await fetch(`/api/companies?${params.toString()}`);
-      if (!res.ok) throw new Error('Error al obtener compañías');
+      if (!res.ok) throw new Error('Sin resultados');
       const data = await res.json();
       setCompanies(data.companies);
       setTotalPages(data.totalPages);
@@ -188,32 +188,16 @@ export default function CompaniesPage() {
 
           {/* Paginación */}
 
-          <Pagination className="mt-4">
-            <PaginationContent>
-              <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-                Anterior
-              </PaginationPrevious>
-              <PaginationItem>
-                <PaginationLink>{page}</PaginationLink>
-              </PaginationItem>
-              {totalPages > 1 && (
-                <>
-                  <PaginationEllipsis />
-                  <PaginationItem>
-                    <PaginationLink>{totalPages}</PaginationLink>
-                  </PaginationItem>
-                </>
-              )}
-              <PaginationNext onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                Siguiente
-              </PaginationNext>
-            </PaginationContent>
-          </Pagination>
-          {/*<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === 1 ? '#eee' : '#11224C', color: page === 1 ? '#888' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>Anterior</button>
-            <span style={{ fontWeight: 'bold', fontSize: 16 }}>Página {page} de {totalPages}</span>
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === totalPages ? '#eee' : '#11224C', color: page === totalPages ? '#888' : 'white', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>Siguiente</button>
-          </div>*/}
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
+            <Button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} variant="ghost"
+                    style={{ padding: '4px 12px', borderRadius: 4, border: '0px solid #11224C', background: page === 1 ? '#eee' : '#11224C', color: page === 1 ? '#888' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>
+              Anterior
+            </Button>
+            <span style={{ fontSize: 14 }}>Página {page} de {totalPages}</span>
+            <Button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} variant="ghost"
+                    style={{ padding: '4px 12px', borderRadius: 4, border: '0px solid #11224C', background: page === totalPages ? '#eee' : '#11224C', color: page === totalPages ? '#888' : 'white', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>Siguiente</Button>
+          </div>
           <div style={{ textAlign: 'right', color: '#666', fontSize: 14, marginTop: 4 }}>Total: {total} empresas</div>
         </> 
       )}
