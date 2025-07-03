@@ -1,63 +1,139 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+
+import { Button } from '@/registry/new-york-v4/ui/button';
+import { Input } from '@/registry/new-york-v4/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/registry/new-york-v4/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/registry/new-york-v4/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/registry/new-york-v4/ui/alert-dialog';
+import { Badge } from '@/registry/new-york-v4/ui/badge';
+import { Label } from '@/registry/new-york-v4/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/registry/new-york-v4/ui/select';
 
 interface Employee {
   id: string;
   office_id: string;
   employee_code: number;
   employee_name: string;
-  employee_type: string;
+  employee_type: 'SIND' | 'CONF';
   employee_status: number;
-  created_at: string;
-  updated_at: string;
-  office?: {
-    office_name: string;
-  };
 }
 
-const initialForm = { office_id: '', employee_code: 0, employee_name: '', employee_type: '', employee_status: 1 };
+interface Office {
+  id: string;
+  office_name: string;
+}
+
+interface EmployeeForm {
+  office_id: string;
+  employee_code: string; // Usamos string para el input, convertimos al enviar
+  employee_name: string;
+  employee_type: 'SIND' | 'CONF';
+  employee_status: number;
+}
+
+const initialForm: EmployeeForm = { office_id: '', employee_code: '', employee_name: '', employee_type: 'SIND', employee_status: 1 };
+const PAGE_SIZE = 7;
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [offices, setOffices] = useState<Office[]>([]);
+  const [officeMap, setOfficeMap] = useState<Map<string, string>>(new Map());
+
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [showModal, setShowModal] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [form, setForm] = useState<{ office_id: string; employee_code: number; employee_name: string; employee_type: string; employee_status: number }>(initialForm);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
+  const [form, setForm] = useState<EmployeeForm>(initialForm);
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const params = new URLSearchParams({
         page: String(page),
-        pageSize: String(pageSize),
-        search,
+        pageSize: String(PAGE_SIZE),
+        search: debouncedSearch,
       });
       const res = await fetch(`/api/employees?${params.toString()}`);
-      if (!res.ok) throw new Error('Error al obtener empleados');
+      if (!res.ok) throw new Error('No se pudieron obtener los empleados.');
       const data = await res.json();
       setEmployees(data.employees || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, search]);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
+
+  useEffect(() => {
+    const fetchOffices = async () => {
+      try {
+        const res = await fetch('/api/offices?page=1&pageSize=1000'); // Fetch all offices
+        if (!res.ok) throw new Error('No se pudieron obtener las oficinas.');
+        const data = await res.json();
+        const officeData = data.offices || [];
+        setOffices(officeData);
+        setOfficeMap(new Map(officeData.map((o: Office) => [o.id, o.office_name])));
+      } catch (e: any) {
+        toast.error(e.message);
+      }
+    };
+    fetchOffices();
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -65,188 +141,213 @@ export default function EmployeesPage() {
   };
 
   const openCreate = () => {
-    setForm(initialForm);
     setIsEdit(false);
-    setEditId(null);
-    setShowModal(true);
+    setCurrentEmployee(null);
+    setForm(initialForm);
+    setIsModalOpen(true);
   };
 
   const openEdit = (employee: Employee) => {
+    setIsEdit(true);
+    setCurrentEmployee(employee);
     setForm({
       office_id: employee.office_id,
-      employee_code: employee.employee_code,
+      employee_code: String(employee.employee_code),
       employee_name: employee.employee_name,
       employee_type: employee.employee_type,
       employee_status: employee.employee_status,
     });
-    setIsEdit(true);
-    setEditId(employee.id);
-    setShowModal(true);
+    setIsModalOpen(true);
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: name === 'employee_code' || name === 'employee_status' ? Number(value) : value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: keyof EmployeeForm, value: string | number) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setActionLoading(true);
     try {
       const method = isEdit ? 'PUT' : 'POST';
-      const body = isEdit ? { ...form, id: editId } : form;
+      const body = {
+        ...form,
+        id: isEdit ? currentEmployee?.id : undefined,
+        employee_code: Number(form.employee_code), // Convertir a número
+      };
+
       const res = await fetch('/api/employees', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error('Error al guardar empleado');
-      setShowModal(false);
-      setForm(initialForm);
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al guardar el empleado.');
+
+      toast.success(`Empleado ${isEdit ? 'actualizado' : 'creado'} con éxito.`);
+      setIsModalOpen(false);
       fetchEmployees();
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    setLoading(true);
-    setError(null);
+    setActionLoading(true);
     try {
       const res = await fetch('/api/employees', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: deleteId }),
       });
-      if (!res.ok) throw new Error('Error al eliminar empleado');
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al eliminar el empleado.');
+
+      toast.success('Empleado eliminado con éxito.');
       setDeleteId(null);
-      setConfirmDelete(false);
+      setConfirmDeleteOpen(false);
       fetchEmployees();
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ fontWeight: 'bold', fontSize: '2rem', marginRight: '1rem' }}>Empleados</h2>
-        <button onClick={openCreate} style={{ background: '#11224C', color: 'white', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, border: 'none', cursor: 'pointer' }}>+</button>
-        <div style={{ flex: 1 }} />
-        <label style={{ fontSize: 20, color: '#666', marginRight: 8 }}>Buscar:</label>
-        <input type="text" value={search} onChange={handleSearch} style={{ border: '1px solid #aaa', borderRadius: 4, padding: '4px 8px', fontSize: 16 }} />
+    <div className="p-4 md:p-8 space-y-4">
+      <div className="flex items-center">
+        <h2 className="text-3xl font-bold">Empleados</h2>
+        <div className="ml-auto flex items-center gap-2">
+          <Input placeholder="Buscar empleado..." value={search} onChange={handleSearch} className="w-64" />
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
+          </Button>
+        </div>
       </div>
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>Cargando...</div>
-      ) : error ? (
-        <div style={{ color: 'red', textAlign: 'center', padding: '2rem' }}>{error}</div>
-      ) : (
-        <>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'inherit' }}>
-            <thead>
-              <tr style={{ background: '#11224C', color: 'white' }}>
-                <th style={{ padding: '8px' }}>ID</th>
-                <th style={{ padding: '8px' }}>Código</th>
-                <th style={{ padding: '8px' }}>Nombre</th>
-                <th style={{ padding: '8px' }}>Tipo</th>
-                <th style={{ padding: '8px' }}>Oficina</th>
-                <th style={{ padding: '8px' }}>Status</th>
-                <th style={{ padding: '8px' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>No hay empleados</td></tr>
-              ) : employees.map((employee, idx) => (
-                <tr key={employee.id} style={{ background: idx % 2 === 0 ? '#F5F6FA' : 'white' }}>
-                  <td style={{ fontWeight: 'bold', color: '#888', padding: '8px', textAlign: 'center' }}>{employee.id.slice(0, 4)}</td>
-                  <td style={{ padding: '8px' }}>{employee.employee_code}</td>
-                  <td style={{ padding: '8px' }}>{employee.employee_name}</td>
-                  <td style={{ padding: '8px' }}>{employee.employee_type}</td>
-                  <td style={{ padding: '8px' }}>{employee.office?.office_name || employee.office_id.slice(0, 8) + '...'}</td>
-                  <td style={{ padding: '8px' }}>
-                    <span style={{
-                      background: employee.employee_status === 1 ? '#218838' : '#C82333',
-                      color: 'white',
-                      borderRadius: 8,
-                      padding: '2px 16px',
-                      fontWeight: 'bold',
-                      fontSize: 16,
-                    }}>
-                      {employee.employee_status === 1 ? 'ACTIVO' : 'INACTIVO'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '8px', display: 'flex', gap: 8 }}>
-                    <button title="Editar" onClick={() => openEdit(employee)} style={{ width: 24, height: 24, borderRadius: 4, background: '#218838', border: 'none', cursor: 'pointer' }} />
-                    <button title="Eliminar" onClick={() => { setDeleteId(employee.id); setConfirmDelete(true); }} style={{ width: 24, height: 24, borderRadius: 4, background: '#C82333', border: 'none', cursor: 'pointer' }} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {/* Paginación */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8 }}>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === 1 ? '#eee' : '#11224C', color: page === 1 ? '#888' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>Anterior</button>
-            <span style={{ fontWeight: 'bold', fontSize: 16 }}>Página {page} de {totalPages}</span>
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #11224C', background: page === totalPages ? '#eee' : '#11224C', color: page === totalPages ? '#888' : 'white', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>Siguiente</button>
-          </div>
-          <div style={{ textAlign: 'right', color: '#666', fontSize: 14, marginTop: 4 }}>Total: {total} empleados</div>
-        </>
-      )}
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-24">Código</TableHead>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Oficina</TableHead>
+              <TableHead className="w-32">Tipo</TableHead>
+              <TableHead className="w-32">Status</TableHead>
+              <TableHead className="w-32 text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow><TableCell colSpan={6} className="text-center h-24">Cargando...</TableCell></TableRow>
+            ) : employees.length === 0 ? (
+              <TableRow><TableCell colSpan={6} className="text-center h-24">No se encontraron empleados.</TableCell></TableRow>
+            ) : (
+              employees.map((employee) => (
+                <TableRow key={employee.id}>
+                  <TableCell className="font-mono text-sm">{employee.employee_code}</TableCell>
+                  <TableCell className="font-medium">{employee.employee_name}</TableCell>
+                  <TableCell>{officeMap.get(employee.office_id) || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge variant={employee.employee_type === 'SIND' ? 'outline' : 'secondary'}>
+                      {employee.employee_type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={employee.employee_status === 1 ? 'default' : 'destructive'}>
+                      {employee.employee_status === 1 ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(employee)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { setDeleteId(employee.id); setConfirmDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex justify-between items-center text-sm text-muted-foreground">
+        <div>Total: {total} empleados</div>
+        <div className="flex items-center gap-2">
+          <span>Página {page} de {totalPages}</span>
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Anterior</Button>
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Siguiente</Button>
+        </div>
+      </div>
+
       {/* Modal Crear/Editar */}
-      {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <form onSubmit={handleSubmit} style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>{isEdit ? 'Editar empleado' : 'Nuevo empleado'}</h3>
-            <div style={{ marginBottom: 16 }}>
-              <label>Código:</label>
-              <input name="employee_code" type="number" value={form.employee_code} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader><DialogTitle>{isEdit ? 'Editar Empleado' : 'Nuevo Empleado'}</DialogTitle></DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="employee_code" className="text-right">Código</Label>
+                <Input id="employee_code" name="employee_code" type="number" value={form.employee_code} onChange={handleFormChange} required className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="employee_name" className="text-right">Nombre</Label>
+                <Input id="employee_name" name="employee_name" value={form.employee_name} onChange={handleFormChange} required className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="office_id" className="text-right">Oficina</Label>
+                <Select required onValueChange={(value) => handleSelectChange('office_id', value)} value={form.office_id}>
+                  <SelectTrigger className="col-span-3"><SelectValue placeholder="Selecciona una oficina" /></SelectTrigger>
+                  <SelectContent>{offices.map(o => <SelectItem key={o.id} value={o.id}>{o.office_name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="employee_type" className="text-right">Tipo</Label>
+                <Select onValueChange={(value: 'SIND' | 'CONF') => handleSelectChange('employee_type', value)} value={form.employee_type}>
+                  <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="SIND">Sindicalizado</SelectItem><SelectItem value="CONF">Confianza</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="employee_status" className="text-right">Status</Label>
+                <Select onValueChange={(value) => handleSelectChange('employee_status', Number(value))} value={String(form.employee_status)}>
+                  <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="1">Activo</SelectItem><SelectItem value="0">Inactivo</SelectItem></SelectContent>
+                </Select>
+              </div>
             </div>
-            <div style={{ marginBottom: 16 }}>
-              <label>Nombre:</label>
-              <input name="employee_name" value={form.employee_name} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label>Tipo:</label>
-              <input name="employee_type" value={form.employee_type} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label>Oficina:</label>
-              <input name="office_id" value={form.office_id} onChange={handleFormChange} required style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }} />
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label>Status:</label>
-              <select name="employee_status" value={form.employee_status} onChange={handleFormChange} style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #aaa', marginTop: 4 }}>
-                <option value={1}>ACTIVO</option>
-                <option value={0}>INACTIVO</option>
-              </select>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button type="button" onClick={() => setShowModal(false)} style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #888', background: '#eee', color: '#333' }}>Cancelar</button>
-              <button type="submit" style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#11224C', color: 'white', fontWeight: 'bold' }}>{isEdit ? 'Guardar' : 'Crear'}</button>
-            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+              <Button type="submit" disabled={actionLoading}>
+                {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEdit ? 'Guardar Cambios' : 'Crear Empleado'}
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Confirmar Eliminar */}
-      {confirmDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', padding: 32, borderRadius: 8, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 16 }}>¿Eliminar empleado?</h3>
-            <p>Esta acción no se puede deshacer.</p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-              <button type="button" onClick={() => { setDeleteId(null); setConfirmDelete(false); }} style={{ padding: '6px 16px', borderRadius: 4, border: '1px solid #888', background: '#eee', color: '#333' }}>Cancelar</button>
-              <button type="button" onClick={handleDelete} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', background: '#C82333', color: 'white', fontWeight: 'bold' }}>Eliminar</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro de que quieres eliminar este empleado?</AlertDialogTitle>
+            <AlertDialogDescription>Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={actionLoading} className="bg-destructive hover:bg-destructive/90">
+              {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-} 
+}
