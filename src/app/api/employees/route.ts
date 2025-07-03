@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   }
   try {
     const employees = await prisma.employees.findMany();
-    return NextResponse.json(employees);
+    
+return NextResponse.json(employees);
   } catch (error) {
     return NextResponse.json({ message: 'Error al obtener empleados' }, { status: 500 });
   }
@@ -36,7 +37,8 @@ export async function POST(request: NextRequest) {
     const employee = await prisma.employees.create({
       data: { office_id, employee_code, employee_name, employee_type, employee_status }
     });
-    return NextResponse.json(employee);
+    
+return NextResponse.json(employee);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear empleado' }, { status: 500 });
   }
@@ -57,7 +59,8 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: { office_id, employee_code, employee_name, employee_type, employee_status }
     });
-    return NextResponse.json(employee);
+    
+return NextResponse.json(employee);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar empleado' }, { status: 500 });
   }
@@ -75,7 +78,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.employees.delete({ where: { id } });
-    return NextResponse.json({ message: 'Empleado eliminado correctamente' });
+    
+return NextResponse.json({ message: 'Empleado eliminado correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar empleado' }, { status: 500 });
   }

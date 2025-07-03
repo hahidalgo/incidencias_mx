@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   }
   try {
     const incidents = await prisma.incidents.findMany();
-    return NextResponse.json(incidents);
+    
+return NextResponse.json(incidents);
   } catch (error) {
     return NextResponse.json({ message: 'Error al obtener incidentes' }, { status: 500 });
   }
@@ -40,7 +41,8 @@ export async function POST(request: NextRequest) {
         incident_status
       }
     });
-    return NextResponse.json(incident);
+    
+return NextResponse.json(incident);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear incidente' }, { status: 500 });
   }
@@ -65,7 +67,8 @@ export async function PUT(request: NextRequest) {
         incident_status
       }
     });
-    return NextResponse.json(incident);
+    
+return NextResponse.json(incident);
   } catch (error) {
     return NextResponse.json({ message: 'Error al actualizar incidente' }, { status: 500 });
   }
@@ -83,7 +86,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.incidents.delete({ where: { id } });
-    return NextResponse.json({ message: 'Incidente eliminado correctamente' });
+    
+return NextResponse.json({ message: 'Incidente eliminado correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar incidente' }, { status: 500 });
   }
