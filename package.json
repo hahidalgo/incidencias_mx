@@ -6,12 +6,13 @@
     "license": "MIT",
     "scripts": {
         "dev": "next dev --turbopack",
-        "build": "next build",
+        "build": "prisma generate && next build",
         "start": "next start",
         "lint": "next lint",
         "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
         "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-        "seed": "tsx scripts/seed.ts"
+        "seed": "tsx scripts/seed.ts",
+        "postinstall": "prisma generate"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.1.1",

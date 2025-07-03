@@ -9,7 +9,6 @@ const withBundleAnalyzer = initializeBundleAnalyzer({
 
 // https://nextjs.org/docs/pages/api-reference/next-config-js
 const nextConfig: NextConfig = {
-    output: 'standalone',
     outputFileTracingIncludes: {
         "/*": ["./registry/**/*"],
       },
@@ -25,6 +24,9 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      experimental: {
+        serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
+      }
 };
 
 export default withBundleAnalyzer(nextConfig);
