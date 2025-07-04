@@ -53,12 +53,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const token = getTokenFromRequest(request);
   if (!verifyAuthToken(token)) {
+
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
   try {
     const { company_id, office_name, office_status } = await request.json();
     if (!company_id || !office_name || office_status === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
+
     }
     const office = await prisma.offices.create({
       data: {
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
         office_status
       }
     });
+
     return NextResponse.json(office);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear oficina' }, { status: 500 });
@@ -77,11 +80,13 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const token = getTokenFromRequest(request);
   if (!verifyAuthToken(token)) {
+
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
   try {
     const { id, company_id, office_name, office_status } = await request.json();
     if (!id || !company_id || !office_name || office_status === undefined) {
+
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     const office = await prisma.offices.update({
@@ -92,6 +97,7 @@ export async function PUT(request: NextRequest) {
         office_status
       }
     });
+
     return NextResponse.json(office);
   } catch (error) {
     return NextResponse.json({ message: 'Error al actualizar oficina' }, { status: 500 });
@@ -110,6 +116,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.offices.delete({ where: { id } });
+    
     return NextResponse.json({ message: 'Oficina eliminada correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar oficina' }, { status: 500 });
