@@ -248,3 +248,209 @@ graph TD;
   - **Protección:** Requiere token válido.
 
 ---
+
+## 🧰 Ejemplos de Uso con Postman
+
+### 1. Autenticación (Obtener token)
+
+- **Endpoint:** `POST /api/auth/login`
+- **Body (JSON):**
+```json
+{
+  "email": "usuario@ejemplo.com",
+  "password": "123456"
+}
+```
+- **Nota:** El token JWT se almacena automáticamente en una cookie httpOnly. En Postman, revisa la pestaña "Cookies" tras el login exitoso.
+
+---
+
+### 2. Usar endpoints protegidos en Postman
+
+**Importante:**
+- Realiza primero el login para obtener la cookie de sesión.
+- En cada petición protegida, asegúrate de que la cookie `token` esté presente (Postman la gestiona automáticamente si usas la misma colección o entorno).
+
+---
+
+### Usuarios
+
+#### Obtener usuarios (GET)
+- **Método:** GET
+- **URL:** `http://localhost:3000/api/users?page=1&pageSize=10&search=juan`
+- **Headers:** Ninguno especial (la cookie se envía automáticamente)
+
+#### Crear usuario (POST)
+- **Método:** POST
+- **URL:** `http://localhost:3000/api/users`
+- **Body (JSON):**
+```json
+{
+  "user_name": "Juan Pérez",
+  "user_email": "juan.perez@ejemplo.com",
+  "user_password": "123456",
+  "user_status": 1,
+  "user_rol": 2,
+  "company_id": "id-compania",
+  "office_id": "id-oficina"
+}
+```
+
+#### Editar usuario (PUT)
+- **Método:** PUT
+- **URL:** `http://localhost:3000/api/users`
+- **Body (JSON):**
+```json
+{
+  "id": "id-usuario",
+  "user_name": "Juan Pérez Modificado",
+  "user_email": "juan.perez@ejemplo.com",
+  "user_status": 1,
+  "user_rol": 2,
+  "company_id": "id-compania",
+  "office_id": "id-oficina"
+}
+```
+
+#### Eliminar usuario (DELETE)
+- **Método:** DELETE
+- **URL:** `http://localhost:3000/api/users`
+- **Body (JSON):**
+```json
+{
+  "id": "id-usuario"
+}
+```
+
+---
+
+### Compañías
+
+#### Obtener compañías (GET)
+- **Método:** GET
+- **URL:** `http://localhost:3000/api/companies?page=1&pageSize=10&search=soaint`
+
+#### Crear compañía (POST)
+- **Método:** POST
+- **URL:** `http://localhost:3000/api/companies`
+- **Body (JSON):**
+```json
+{
+  "company_name": "Soaint México",
+  "company_status": 1
+}
+```
+
+#### Editar compañía (PUT)
+- **Método:** PUT
+- **URL:** `http://localhost:3000/api/companies`
+- **Body (JSON):**
+```json
+{
+  "id": "id-compania",
+  "company_name": "Soaint México Modificado",
+  "company_status": 1
+}
+```
+
+#### Eliminar compañía (DELETE)
+- **Método:** DELETE
+- **URL:** `http://localhost:3000/api/companies`
+- **Body (JSON):**
+```json
+{
+  "id": "id-compania"
+}
+```
+
+---
+
+### Oficinas
+
+#### Obtener oficinas (GET)
+- **Método:** GET
+- **URL:** `http://localhost:3000/api/offices?page=1&pageSize=10&search=principal`
+
+#### Crear oficina (POST)
+- **Método:** POST
+- **URL:** `http://localhost:3000/api/offices`
+- **Body (JSON):**
+```json
+{
+  "company_id": "id-compania",
+  "office_name": "Oficina Principal",
+  "office_status": 1
+}
+```
+
+#### Editar oficina (PUT)
+- **Método:** PUT
+- **URL:** `http://localhost:3000/api/offices`
+- **Body (JSON):**
+```json
+{
+  "id": "id-oficina",
+  "company_id": "id-compania",
+  "office_name": "Oficina Principal Modificada",
+  "office_status": 1
+}
+```
+
+#### Eliminar oficina (DELETE)
+- **Método:** DELETE
+- **URL:** `http://localhost:3000/api/offices`
+- **Body (JSON):**
+```json
+{
+  "id": "id-oficina"
+}
+```
+
+---
+
+### Empleados
+
+#### Obtener empleados (GET)
+- **Método:** GET
+- **URL:** `http://localhost:3000/api/employees?page=1&pageSize=10&search=juan`
+
+#### Crear empleado (POST)
+- **Método:** POST
+- **URL:** `http://localhost:3000/api/employees`
+- **Body (JSON):**
+```json
+{
+  "office_id": "id-oficina",
+  "employee_code": 1001,
+  "employee_name": "Juan Pérez",
+  "employee_type": "Administrativo",
+  "employee_status": 1
+}
+```
+
+#### Editar empleado (PUT)
+- **Método:** PUT
+- **URL:** `http://localhost:3000/api/employees`
+- **Body (JSON):**
+```json
+{
+  "id": "id-empleado",
+  "office_id": "id-oficina",
+  "employee_code": 1001,
+  "employee_name": "Juan Pérez Modificado",
+  "employee_type": "Administrativo",
+  "employee_status": 1
+}
+```
+
+#### Eliminar empleado (DELETE)
+- **Método:** DELETE
+- **URL:** `http://localhost:3000/api/employees`
+- **Body (JSON):**
+```json
+{
+  "id": "id-empleado"
+}
+```
+
+---
