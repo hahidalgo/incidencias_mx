@@ -67,3 +67,7 @@ erDiagram
 ```
 
 ---
+
+<p align="center">
+  <img src="../assets/logo-soaint-azul.png" alt="Logo del Proyecto">
+</p>
