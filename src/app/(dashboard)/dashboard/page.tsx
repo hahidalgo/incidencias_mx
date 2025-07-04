@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlarmClockIcon, Megaphone, PenToolIcon, SearchIcon, WalletCardsIcon, TentTree, Coffee, ChartNoAxesCombined, FileSearchIcon, CalendarSync } from 'lucide-react';
 
+// Es una buena práctica definir una interfaz para los datos del usuario.
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
 const icons = {
   incidencias: <WalletCardsIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />,
   vacaciones: <TentTree className="w-12 h-12 group-hover:scale-110 transition-transform" />,
@@ -15,7 +22,7 @@ const icons = {
 };
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -29,12 +36,7 @@ export default function DashboardPage() {
       }
     };
     checkSession();
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
-  };
+  }, [router]);
 
   if (!user) {
     return (
@@ -73,7 +75,7 @@ export default function DashboardPage() {
             Registra
           </h2>
           <div className="flex gap-6 flex-wrap  text-[#f39200]">
-            <CardButton icon={"incidencias"} label="Incidencias" />
+            <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />
             <CardButton icon={"vacaciones"} label="Vacaciones" />
             <CardButton icon={"tiempolibre"} label="Tiempo Libre" />
           </div>
@@ -97,15 +99,32 @@ export default function DashboardPage() {
   );
 }
 
-function CardButton({ icon, label }: { icon: keyof typeof icons; label: string }) {
+interface CardButtonProps {
+  icon: keyof typeof icons;
+  label: string;
+  source?: string;
+}
+
+function CardButton({ icon, label, source }: CardButtonProps) {
   const SelectedIcon = icons[icon];
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (source) {
+      router.push(source);
+    }
+  };
   
   return (
-    <button className="text-[#f39200] flex flex-col items-center justify-center w-40 h-28 bg-white rounded-xl shadow-sm border border-[#ececec] hover:shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3b3bb3] group">
+    <button
+      onClick={handleClick}
+      disabled={!source}
+      className="text-[#f39200] flex flex-col items-center justify-center w-40 h-28 bg-white rounded-xl shadow-sm border border-[#ececec] hover:shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3b3bb3] group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm"
+    >
       <div className="mb-2">
         {SelectedIcon}
       </div>
       <span className="text-gray-500 text-base group-hover:text-[#0e2655]">{label}</span>
     </button>
   );
-} 
+}

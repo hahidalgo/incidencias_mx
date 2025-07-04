@@ -70,13 +70,13 @@ export default function LoginPage() {
       <div className="hidden md:flex flex-col justify-between items-center w-1/2 bg-[#18306a] relative overflow-hidden">
         {/* Imagen de fondo con overlay azul */}
         <div className="absolute inset-0 z-0">
-          <Image
+          {/*<Image
             src="/images/login-bg.jpg"
             alt="Fondo login"
             fill
             style={{ objectFit: 'cover', opacity: 0.25 }}
             priority
-          />
+          /> */}
           <div className="absolute inset-0 bg-[#18306a] opacity-90" />
         </div>
         {/* Logos y personas */}
@@ -165,9 +165,6 @@ export default function LoginPage() {
                 'Acceder'
               )}
             </Button>
-            <div className="text-center mt-2">
-              <a href="#" className="text-xs text-[#f39200] hover:underline">¿Olvidaste tu contraseña?</a>
-            </div>
           </form>
         </div>
       </div>

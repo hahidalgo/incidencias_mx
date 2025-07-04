@@ -1,12 +1,12 @@
-import HomePage from '@/app/(delete-this-and-modify-page.tsx)/HomePage';
+import { redirect } from 'next/navigation';
 
 /**
- * The main page component that renders the HomePage component.
+ * The main page component that redirects to /login.
  *
  * @returns {JSX.Element} The rendered HomePage component.
  */
 const Page = () => {
-    return <HomePage />;
+    redirect('/login');
 };
 
 export default Page;
