@@ -107,37 +107,144 @@ graph TD;
 
 ---
 
-## 🛡️ Ejemplo de Protección de Rutas en Frontend (Next.js)
+## 📑 Documentación de Endpoints Protegidos
 
-Para proteger una página, verifica la sesión al cargar el componente:
+### Usuarios (`/api/users`)
+- **GET** `/api/users`
+  - **Descripción:** Lista usuarios con paginación y búsqueda.
+  - **Query params:** `page`, `pageSize`, `search`
+  - **Respuesta:** `{ users, total, page, pageSize, totalPages }`
+  - **Protección:** Requiere token válido.
 
-```tsx
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+- **POST** `/api/users`
+  - **Descripción:** Crea un nuevo usuario.
+  - **Body:**  
+    - `user_name` (string, requerido)
+    - `user_email` (string, requerido)
+    - `user_password` (string, requerido)
+    - `user_status` (int, requerido)
+    - `user_rol` (int, requerido)
+    - `company_id` (string, requerido)
+    - `office_id` (string, requerido)
+  - **Respuesta:** Usuario creado o error.
+  - **Protección:** Requiere token válido.
 
-export default function PaginaProtegida() {
-  const [user, setUser] = useState(null);
-  const router = useRouter();
+- **PUT** `/api/users`
+  - **Descripción:** Edita un usuario existente.
+  - **Body:**  
+    - `id` (string, requerido)
+    - ... (los mismos campos que POST, menos la contraseña)
+  - **Respuesta:** Usuario actualizado o error.
+  - **Protección:** Requiere token válido.
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        router.push('/login');
-      }
-    };
-    checkSession();
-  }, []);
+- **DELETE** `/api/users`
+  - **Descripción:** Elimina un usuario.
+  - **Body:**  
+    - `id` (string, requerido)
+  - **Respuesta:** Mensaje de éxito o error.
+  - **Protección:** Requiere token válido.
 
-  if (!user) {
-    return <div>Cargando...</div>;
-  }
+---
 
-  return <div>Contenido protegido para {user.name}</div>;
-}
-```
+### Compañías (`/api/companies`)
+- **GET** `/api/companies`
+  - **Descripción:** Lista compañías con paginación y búsqueda.
+  - **Query params:** `page`, `pageSize`, `search`
+  - **Respuesta:** `{ companies, total, page, pageSize, totalPages }`
+  - **Protección:** Requiere token válido.
+
+- **POST** `/api/companies`
+  - **Descripción:** Crea una nueva compañía.
+  - **Body:**  
+    - `company_name` (string, requerido)
+    - `company_status` (int, requerido)
+  - **Respuesta:** Compañía creada o error.
+  - **Protección:** Requiere token válido.
+
+- **PUT** `/api/companies`
+  - **Descripción:** Edita una compañía.
+  - **Body:**  
+    - `id` (string, requerido)
+    - `company_name` (string, requerido)
+    - `company_status` (int, requerido)
+  - **Respuesta:** Compañía actualizada o error.
+  - **Protección:** Requiere token válido.
+
+- **DELETE** `/api/companies`
+  - **Descripción:** Elimina una compañía.
+  - **Body:**  
+    - `id` (string, requerido)
+  - **Respuesta:** Mensaje de éxito o error.
+  - **Protección:** Requiere token válido.
+
+---
+
+### Oficinas (`/api/offices`)
+- **GET** `/api/offices`
+  - **Descripción:** Lista oficinas con paginación y búsqueda.
+  - **Query params:** `page`, `pageSize`, `search`
+  - **Respuesta:** `{ offices, total, page, pageSize, totalPages }`
+  - **Protección:** Requiere token válido.
+
+- **POST** `/api/offices`
+  - **Descripción:** Crea una nueva oficina.
+  - **Body:**  
+    - `company_id` (string, requerido)
+    - `office_name` (string, requerido)
+    - `office_status` (int, requerido)
+  - **Respuesta:** Oficina creada o error.
+  - **Protección:** Requiere token válido.
+
+- **PUT** `/api/offices`
+  - **Descripción:** Edita una oficina.
+  - **Body:**  
+    - `id` (string, requerido)
+    - `company_id` (string, requerido)
+    - `office_name` (string, requerido)
+    - `office_status` (int, requerido)
+  - **Respuesta:** Oficina actualizada o error.
+  - **Protección:** Requiere token válido.
+
+- **DELETE** `/api/offices`
+  - **Descripción:** Elimina una oficina.
+  - **Body:**  
+    - `id` (string, requerido)
+  - **Respuesta:** Mensaje de éxito o error.
+  - **Protección:** Requiere token válido.
+
+---
+
+### Empleados (`/api/employees`)
+- **GET** `/api/employees`
+  - **Descripción:** Lista empleados con paginación y búsqueda.
+  - **Query params:** `page`, `pageSize`, `search`
+  - **Respuesta:** `{ employees, total, totalPages }`
+  - **Protección:** Requiere token válido.
+
+- **POST** `/api/employees`
+  - **Descripción:** Crea un nuevo empleado.
+  - **Body:**  
+    - `office_id` (string, requerido)
+    - `employee_code` (int, requerido)
+    - `employee_name` (string, requerido)
+    - `employee_type` (string, requerido)
+    - `employee_status` (int, requerido)
+  - **Respuesta:** Empleado creado o error.
+  - **Protección:** Requiere token válido.
+
+- **PUT** `/api/employees`
+  - **Descripción:** Edita un empleado.
+  - **Body:**  
+    - `id` (string, requerido)
+    - ... (los mismos campos que POST)
+  - **Respuesta:** Empleado actualizado o error.
+  - **Protección:** Requiere token válido.
+
+- **DELETE** `/api/employees`
+  - **Descripción:** Elimina un empleado.
+  - **Body:**  
+    - `id` (string, requerido)
+  - **Respuesta:** Mensaje de éxito o error.
+  - **Protección:** Requiere token válido.
 
 ---
