@@ -42,6 +42,7 @@ const formSchema = z.object({
     employeeId: z.string({ required_error: "El empleado es requerido." }).min(1, "El empleado es requerido."),
     incidentId: z.string({ required_error: "La incidencia es requerida." }).min(1, "La incidencia es requerida."),
     incidenceDate: z.date({ required_error: "La fecha de incidencia es requerida." }),
+    incidenceObservation: z.string().optional(),
 });
 
 type MovementFormValues = z.infer<typeof formSchema>;
@@ -71,12 +72,14 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                 employeeId: initialData.employee.id,
                 incidentId: initialData.incident.id,
                 incidenceDate: new Date(initialData.incidence_date),
+                incidenceObservation: initialData.incidence_observation || '',
             });
         } else {
             form.reset({
                 employeeId: '',
                 incidentId: '',
                 incidenceDate: new Date(),
+                incidenceObservation: '',
             });
         }
     }, [initialData, form, isOpen]);
@@ -108,13 +111,25 @@ export const MovementModal: React.FC<MovementModalProps> = ({
     const onSubmit = async (values: MovementFormValues) => {
         setLoading(true);
         try {
+            // Buscar el código del empleado y de la incidencia a partir del ID seleccionado
+            const selectedEmployee = employees.find(e => e.id === values.employeeId);
+            const selectedIncident = incidents.find(i => i.id === values.incidentId);
+            if (!selectedEmployee || !selectedIncident) {
+                throw new Error('Empleado o incidencia no válidos.');
+            }
+            const body = {
+                employeeCode: selectedEmployee.employee_code,
+                incidentCode: selectedIncident.incident_code,
+                incidenceDate: values.incidenceDate,
+                incidenceObservation: values.incidenceObservation || '',
+            };
             const url = initialData ? `/api/movements?id=${initialData.id}` : '/api/movements';
             const method = initialData ? 'PUT' : 'POST';
 
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(values),
+                body: JSON.stringify(body),
             });
 
             if (!res.ok) {
@@ -217,6 +232,23 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                                             <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus locale={es} />
                                         </PopoverContent>
                                     </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="incidenceObservation"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Observación</FormLabel>
+                                    <FormControl>
+                                        <textarea
+                                            className="border rounded px-3 py-2 min-h-[60px]"
+                                            placeholder="Observaciones (opcional)"
+                                            {...field}
+                                        />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -5,9 +5,10 @@ import { z } from 'zod';
 // Esquema de validación para la creación y actualización de movimientos.
 // Usamos `z.coerce.date()` para convertir el string de fecha que llega en el JSON a un objeto Date.
 const movementSchema = z.object({
-    employeeCode: z.string().min(1, { message: "El ID del empleado es requerido." }),
-    incidentId: z.string().min(1, { message: "El ID de la incidencia es requerido." }),
+    employeeCode: z.coerce.number({ invalid_type_error: "El código de empleado debe ser un número." }).int().positive({ message: "El código de empleado es requerido y debe ser positivo." }),
+    incidentCode: z.string().min(1, { message: "El código de la incidencia es requerido." }),
     incidenceDate: z.coerce.date({ message: "La fecha de incidencia es inválida." }),
+    incidenceObservation: z.string().optional(),
 });
 
 /**
@@ -104,14 +105,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const validation = movementSchema.parse(body);
-        const { employeeCode, incidentId, incidenceDate } = validation;
+        const { employeeCode, incidentCode, incidenceDate, incidenceObservation } = movementSchema.parse(body);
 
         const movement = await prisma.movements.create({
             data: { 
                 employee_code: employeeCode, 
-                incident_id: incidentId, 
-                incidence_date: incidenceDate 
+                incident_code: incidentCode, 
+                incidence_date: incidenceDate,
+                incidence_observation: incidenceObservation || '',
+                incidence_status: 1,
             },
         });
 
@@ -138,12 +140,17 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const validation = movementSchema.parse(body);
-        const { employeeCode, incidentId, incidenceDate } = validation;
+        const { employeeCode, incidentCode, incidenceDate, incidenceObservation } = movementSchema.parse(body);
 
         const movement = await prisma.movements.update({
             where: { id },
-            data: { employee_code: employeeCode, incident_id: incidentId, incidence_date: incidenceDate },
+            data: { 
+                employee_code: employeeCode, 
+                incident_code: incidentCode, 
+                incidence_date: incidenceDate,
+                incidence_observation: incidenceObservation || '',
+                incidence_status: 1,
+            },
         });
 
         return NextResponse.json(movement);
