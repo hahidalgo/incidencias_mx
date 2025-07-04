@@ -37,7 +37,7 @@ Un sistema moderno para la gestión de incidencias desarrollado con Next.js 15, 
    
    Crea un archivo `.env.local` en la raíz del proyecto y agrega:
    ```env
-   DATABASE_URL="mysql://usuario:contraseña@localhost:3306/incidencias_mx"
+   DATABASE_URL="mysql://usuario:contraseña@localhost:3306/database"
    JWT_SECRET=tu_valor_secreto_unico_y_largo
    ```
    > Puedes generar un valor seguro para JWT_SECRET con: `openssl rand -hex 64`
@@ -168,3 +168,4 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 <p align="center">
   <img src="assets/logo-soaint-azul.png" alt="Logo del Proyecto">
 </p>
+
