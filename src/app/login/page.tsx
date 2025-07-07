@@ -101,7 +101,8 @@ export default function LoginPage() {
           <div className="flex justify-center mb-8">
             <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={220} height={75} />
           </div>
-          <h2 className="text-center text-[#18306a] text-lg font-semibold mb-2">Portal RRHH</h2>
+          <h1 className="text-center text-[#18306a] text-lg font-semibold mb-2">Portal Incidencias</h1>
+          <h2 className="text-center text-[#18306a] text-md font-semibold mb-2">Gesti&oacute;n de Cultura y Desarrollo</h2>
           <h3 className="text-center text-gray-700 text-base font-medium mb-6">Inicio de Sesión</h3>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {error && (

@@ -123,25 +123,28 @@ export const MovimientosClient = () => {
                     setIsModalOpen(false);
                 }}
             />
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center">
                 <Heading
                     title={`Movimientos (${total})`}
                     description="Gestiona los movimientos de incidencias de los trabajadores"
                 />
-                <Button onClick={handleCreate}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Agregar
-                </Button>
+
+                <div className="ml-auto flex items-center gap-2">
+                    <Input
+                        placeholder="Filtrar por trabajador o incidencia..."
+                        value={search}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
+                    <Button onClick={handleCreate}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Agregar
+                    </Button>
+                </div>
+                
             </div>
             <Separator />
-            <div className="flex items-center py-4">
-                <Input
-                    placeholder="Filtrar por trabajador o incidencia..."
-                    value={search}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
-            </div>
+            
             <DataTable columns={columns} data={formattedData} loading={loading} />
             <div className="flex justify-between items-center pt-4 text-sm text-muted-foreground">
                 <div className="flex-1">

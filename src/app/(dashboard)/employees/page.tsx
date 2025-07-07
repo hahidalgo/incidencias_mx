@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
-import { Button } from '@/registry/new-york-v4/ui/button';
+import { Button } from "@/components/ui/button";
 import { Input } from '@/registry/new-york-v4/ui/input';
 import {
   Table,
@@ -238,13 +238,13 @@ export default function EmployeesPage() {
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-24">Código</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Oficina</TableHead>
-              <TableHead className="w-32">Tipo</TableHead>
-              <TableHead className="w-32">Status</TableHead>
-              <TableHead className="w-32 text-right">Acciones</TableHead>
+            <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
+              <TableHead className="text-white w-24">Código</TableHead>
+              <TableHead className='text-white'>Nombre</TableHead>
+              <TableHead className='text-white'>Oficina</TableHead>
+              <TableHead className="text-white w-32">Tipo</TableHead>
+              <TableHead className="text-white w-32">Status</TableHead>
+              <TableHead className="text-white w-32 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

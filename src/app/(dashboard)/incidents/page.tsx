@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
-import { Button } from '@/registry/new-york-v4/ui/button';
-import { Input } from '@/registry/new-york-v4/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -12,14 +12,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/registry/new-york-v4/ui/table';
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/registry/new-york-v4/ui/dialog';
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,16 +29,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/registry/new-york-v4/ui/alert-dialog';
-import { Badge } from '@/registry/new-york-v4/ui/badge';
-import { Label } from '@/registry/new-york-v4/ui/label';
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/registry/new-york-v4/ui/select';
+} from '@/components/ui/select';
 
 interface Incident {
   id: string;
@@ -202,11 +202,11 @@ export default function IncidentsPage() {
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-32">Código</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="w-32">Status</TableHead>
-              <TableHead className="w-32 text-right">Acciones</TableHead>
+            <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
+              <TableHead className="text-white w-32">Código</TableHead>
+              <TableHead className='text-white'>Nombre</TableHead>
+              <TableHead className="text-white w-32">Status</TableHead>
+              <TableHead className="text-white w-32 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

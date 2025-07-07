@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
-import { Button } from '@/registry/new-york-v4/ui/button';
-import { Input } from '@/registry/new-york-v4/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -12,7 +12,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/registry/new-york-v4/ui/table';
+} from '@/components/ui/table';
 import {
     Dialog,
     DialogContent,
@@ -20,7 +20,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/registry/new-york-v4/ui/dialog';
+} from '@/components/ui/dialog';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,16 +30,16 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/registry/new-york-v4/ui/alert-dialog';
-import { Badge } from '@/registry/new-york-v4/ui/badge';
-import { Label } from '@/registry/new-york-v4/ui/label';
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/registry/new-york-v4/ui/select';
+} from '@/components/ui/select';
 
 interface User {
     id: string;
@@ -74,8 +74,10 @@ interface UserForm {
 const initialForm: UserForm = { company_id: '', office_id: '', user_name: '', user_email: '', user_password: '', user_status: 1, user_rol: 2 };
 const PAGE_SIZE = 7;
 const USER_ROLES = {
-    1: 'Admin',
-    2: 'Usuario',
+    111: 'Admininistrador de Sistema',
+    1: 'Encargado de Oficina',
+    2: 'Supervisor de Oficinas',
+    3: 'Encargado de RRHH',
 };
 
 export default function UsersPage() {
@@ -226,14 +228,14 @@ export default function UsersPage() {
             <div className="border rounded-lg">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Empresa</TableHead>
-                            <TableHead>Oficina</TableHead>
-                            <TableHead className="w-24">Rol</TableHead>
-                            <TableHead className="w-24">Status</TableHead>
-                            <TableHead className="w-32 text-right">Acciones</TableHead>
+                        <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
+                            <TableHead className='text-white'>Nombre</TableHead>
+                            <TableHead className='text-white'>Email</TableHead>
+                            <TableHead className='text-white'>Empresa</TableHead>
+                            <TableHead className='text-white'>Oficina</TableHead>
+                            <TableHead className="text-white w-24">Rol</TableHead>
+                            <TableHead className="text-white w-24">Status</TableHead>
+                            <TableHead className="w-32 text-white text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -291,7 +293,11 @@ export default function UsersPage() {
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="user_rol" className="text-right">Rol</Label>
-                                <Select onValueChange={(value) => handleSelectChange('user_rol', Number(value))} value={String(form.user_rol)}><SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(USER_ROLES).map(([key, value]) => (<SelectItem key={key} value={key}>{value}</SelectItem>))}</SelectContent></Select>
+                                <Select onValueChange={(value) => handleSelectChange('user_rol', Number(value))} value={String(form.user_rol)}>
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>{Object.entries(USER_ROLES).map(([key, value]) => (<SelectItem key={key} value={key}>{value}</SelectItem>))}</SelectContent></Select>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="user_status" className="text-right">Status</Label>

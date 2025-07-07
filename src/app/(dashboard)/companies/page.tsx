@@ -3,7 +3,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
-import { Button } from '@/registry/new-york-v4/ui/button';
+//import { Button } from '@/registry/new-york-v4/ui/button';
+import { Heading } from "@/components/ui/heading";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { Input } from '@/registry/new-york-v4/ui/input';
 import {
   Table,
@@ -190,19 +193,23 @@ export default function CompaniesPage() {
   return (
     <div className="p-4 md:p-8 space-y-4">
       <div className="flex items-center">
-        <h2 className="text-3xl font-bold">Compañías</h2>
+        <Heading
+                    title="Compañías"
+                    description="Gestiona las empresas del Grupo Ollamani"
+                />
         <div className="ml-auto flex items-center gap-2">
           <Input placeholder="Buscar compañía..." value={search} onChange={handleSearch} className="w-64" />
           <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Nueva Compañía</Button>
         </div>
       </div>
+      <Separator />
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="w-32">Status</TableHead>
-              <TableHead className="w-32 text-right">Acciones</TableHead>
+            <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
+              <TableHead className="text-white">Nombre</TableHead>
+              <TableHead className="w-32 text-white">Status</TableHead>
+              <TableHead className="text-white w-32 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
