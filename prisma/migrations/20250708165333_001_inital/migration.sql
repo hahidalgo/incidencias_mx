@@ -28,6 +28,7 @@ CREATE TABLE `employees` (
     `employee_code` INTEGER NOT NULL,
     `employee_name` VARCHAR(191) NOT NULL,
     `employee_type` VARCHAR(191) NOT NULL,
+    `employee_bonus_dom` INTEGER NOT NULL,
     `employee_status` INTEGER NOT NULL,
     `created_at` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     `updated_at` TIMESTAMP(6) NOT NULL,
@@ -67,7 +68,6 @@ CREATE TABLE `movements` (
 CREATE TABLE `users` (
     `id` VARCHAR(191) NOT NULL,
     `company_id` VARCHAR(191) NOT NULL,
-    `office_id` VARCHAR(191) NOT NULL,
     `user_name` VARCHAR(191) NOT NULL,
     `user_email` VARCHAR(191) NOT NULL,
     `user_password` VARCHAR(191) NOT NULL,
@@ -77,6 +77,30 @@ CREATE TABLE `users` (
     `updated_at` TIMESTAMP(6) NOT NULL,
 
     UNIQUE INDEX `users_user_email_key`(`user_email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `periods` (
+    `id` VARCHAR(191) NOT NULL,
+    `period_name` VARCHAR(191) NOT NULL,
+    `period_start` DATETIME(3) NOT NULL,
+    `period_end` DATETIME(3) NOT NULL,
+    `period_status` INTEGER NOT NULL,
+    `created_at` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    `updated_at` TIMESTAMP(6) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `user_offices` (
+    `id` VARCHAR(191) NOT NULL,
+    `user_id` VARCHAR(191) NOT NULL,
+    `office_id` VARCHAR(191) NOT NULL,
+    `created_at` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    `updated_at` TIMESTAMP(6) NOT NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -91,3 +115,12 @@ ALTER TABLE `movements` ADD CONSTRAINT `movements_employee_code_fkey` FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE `movements` ADD CONSTRAINT `movements_incident_code_fkey` FOREIGN KEY (`incident_code`) REFERENCES `incidents`(`incident_code`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `users` ADD CONSTRAINT `users_company_id_fkey` FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_offices` ADD CONSTRAINT `user_offices_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_offices` ADD CONSTRAINT `user_offices_office_id_fkey` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

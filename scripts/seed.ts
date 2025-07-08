@@ -53,16 +53,25 @@ async function main() {
   const user = await prisma.users.create({
     data: {
       company_id: company.id,
-      office_id: office.id,
       user_name: 'System Administrator',
       user_email: 'superadmin@localhost.dev',
       user_password: hashedPassword,
       user_status: 1,
-      user_rol: 1,
+      user_rol: 101,
     },
   });
 
   console.log('✅ Usuario creado:', user.user_name);
+
+  // Asociar el usuario a la primera oficina para que el login funcione correctamente
+  await prisma.user_offices.create({
+    data: {
+      user_id: user.id,
+      office_id: office.id,
+    },
+  });
+  console.log(`✅ Usuario ${user.user_name} asociado a la oficina ${office.office_name}`);
+
   console.log('📧 Email para login:', user.user_email);
   console.log('🔑 Contraseña: 123456');
 
@@ -73,6 +82,7 @@ async function main() {
       employee_code: 1001,
       employee_name: 'Juan Pérez',
       employee_type: 'SIND',
+      employee_bonus_dom: 0,
       employee_status: 1,
     },
   });
@@ -86,6 +96,7 @@ async function main() {
       employee_code: 1002,
       employee_name: 'Luis Suarez',
       employee_type: 'SIND',
+      employee_bonus_dom: 0,
       employee_status: 1,
     },
   });
@@ -99,6 +110,7 @@ async function main() {
       employee_code: 1003,
       employee_name: 'Manuel Garcia',
       employee_type: 'CONF',
+      employee_bonus_dom: 0,
       employee_status: 1,
     },
   });
@@ -169,11 +181,15 @@ async function main() {
   console.log('   Contraseña: 123456');
 }
 
-main()
-  .catch((e) => {
+async function runSeed() {
+  try {
+    await main();
+  } catch (e) {
     console.error('❌ Error durante el seed:', e);
     process.exit(1);
-  })
-  .finally(async () => {
+  } finally {
     await prisma.$disconnect();
-  }); 
+  }
+}
+
+runSeed();
