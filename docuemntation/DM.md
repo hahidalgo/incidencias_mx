@@ -2,12 +2,13 @@
 
 ```mermaid
 erDiagram
-  companies ||--o{ offices : "1:N"
-  offices ||--o{ employees : "1:N"
-  employees ||--o{ movements : "1:N"
-  incidents ||--o{ movements : "1:N"
-  offices ||--o{ users : "1:N"
-  companies ||--o{ users : "1:N"
+  companies ||--o{ offices : "has"
+  companies ||--o{ users : "has"
+  offices ||--o{ employees : "has"
+  users }o--o| user_offices : "assigned to"
+  offices }o--o| user_offices : "has"
+  employees ||--o{ movements : "registers"
+  incidents ||--o{ movements : "has"
 
   companies {
     id string
@@ -30,6 +31,7 @@ erDiagram
     employee_code int
     employee_name string
     employee_type string
+    employee_bonus_dom int
     employee_status int
     created_at datetime
     updated_at datetime
@@ -55,12 +57,27 @@ erDiagram
   users {
     id string
     company_id string
-    office_id string
     user_name string
     user_email string
     user_password string
     user_status int
     user_rol int
+    created_at datetime
+    updated_at datetime
+  }
+  user_offices {
+    id string
+    user_id string
+    office_id string
+    created_at datetime
+    updated_at datetime
+  }
+  periods {
+    id string
+    period_name string
+    period_start datetime
+    period_end datetime
+    period_status int
     created_at datetime
     updated_at datetime
   }
