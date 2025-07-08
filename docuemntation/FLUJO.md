@@ -125,7 +125,7 @@ graph TD;
     - `user_status` (int, requerido)
     - `user_rol` (int, requerido)
     - `company_id` (string, requerido)
-    - `office_id` (string, requerido)
+    - `office_ids` (array de strings, requerido) - IDs de las oficinas a las que pertenece.
   - **Respuesta:** Usuario creado o error.
   - **Protección:** Requiere token válido.
 
@@ -133,7 +133,7 @@ graph TD;
   - **Descripción:** Edita un usuario existente.
   - **Body:**  
     - `id` (string, requerido)
-    - ... (los mismos campos que POST, menos la contraseña)
+    - ... (los mismos campos que POST, menos la contraseña, `office_ids` es opcional)
   - **Respuesta:** Usuario actualizado o error.
   - **Protección:** Requiere token válido.
 
@@ -292,7 +292,7 @@ graph TD;
   "user_status": 1,
   "user_rol": 2,
   "company_id": "id-compania",
-  "office_id": "id-oficina"
+  "office_ids": ["id-oficina-1", "id-oficina-2"]
 }
 ```
 
