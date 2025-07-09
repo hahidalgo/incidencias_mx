@@ -151,29 +151,6 @@ async function main() {
 
   console.log('✅ Incidencias creadas:', incidents.length);
 
-  // Crear algunos movimientos de ejemplo
-  const movements = await Promise.all([
-    prisma.movements.create({
-      data: {
-        employee_code: employee.employee_code,
-        incident_code: incidents[0].incident_code,
-        incidence_date: new Date(),
-        incidence_observation: 'Se reportó una falla en el sistema principal',
-        incidence_status: 1,
-      },
-    }),
-    prisma.movements.create({
-      data: {
-        employee_code: employee.employee_code,
-        incident_code: incidents[1].incident_code,
-        incidence_date: new Date(),
-        incidence_observation: 'Problemas de conectividad en la red',
-        incidence_status: 1,
-      },
-    }),
-  ]);
-
-  console.log('✅ Movimientos creados:', movements.length);
 
   console.log('🎉 Seed completado exitosamente!');
   console.log('\n📋 Credenciales para probar el login:');

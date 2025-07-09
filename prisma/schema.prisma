@@ -70,6 +70,7 @@ model incidents {
 
 model movements {
   id String  @id @default(uuid())
+  period_id String
   employee_code Int 
   incident_code String 
   incidence_date DateTime
@@ -79,6 +80,7 @@ model movements {
   updated_at DateTime @updatedAt @db.Timestamp(6)
   
   // Relations
+  period periods @relation(fields: [period_id], references: [id])
   employee employees @relation(fields: [employee_code], references: [employee_code])
   incident incidents @relation(fields: [incident_code], references: [incident_code])
 }
@@ -108,6 +110,8 @@ model periods {
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @updatedAt @db.Timestamp(6)
   
+  // Relations
+  movements movements[]
 } 
 
 model user_offices {

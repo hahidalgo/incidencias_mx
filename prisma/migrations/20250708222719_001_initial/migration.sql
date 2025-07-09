@@ -53,6 +53,7 @@ CREATE TABLE `incidents` (
 -- CreateTable
 CREATE TABLE `movements` (
     `id` VARCHAR(191) NOT NULL,
+    `period_id` VARCHAR(191) NOT NULL,
     `employee_code` INTEGER NOT NULL,
     `incident_code` VARCHAR(191) NOT NULL,
     `incidence_date` DATETIME(3) NOT NULL,
@@ -109,6 +110,9 @@ ALTER TABLE `offices` ADD CONSTRAINT `offices_company_id_fkey` FOREIGN KEY (`com
 
 -- AddForeignKey
 ALTER TABLE `employees` ADD CONSTRAINT `employees_office_id_fkey` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `movements` ADD CONSTRAINT `movements_period_id_fkey` FOREIGN KEY (`period_id`) REFERENCES `periods`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `movements` ADD CONSTRAINT `movements_employee_code_fkey` FOREIGN KEY (`employee_code`) REFERENCES `employees`(`employee_code`) ON DELETE RESTRICT ON UPDATE CASCADE;
