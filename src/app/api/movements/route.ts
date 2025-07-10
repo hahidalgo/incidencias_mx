@@ -1,20 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/prisma/client";
 import { z } from 'zod';
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 // Esquema de validación para la creación y actualización de movimientos.
 // Usamos `z.coerce.date()` para convertir el string de fecha que llega en el JSON a un objeto Date.
 const movementSchema = z.object({
     period_id: z.string().uuid({ message: "El ID del período debe ser un UUID válido." }),
-    employee_code: z.coerce.number({
-        invalid_type_error: "El código de empleado debe ser un número."
-    }).int().positive({
-        message: "El código de empleado es requerido y debe ser positivo."
-    }),
-    incident_code: z.string().min(1, {
-        message: "El código de la incidencia es requerido."
-    }),
+    employee_id: z.string().uuid({ message: "El ID del empleado debe ser un UUID válido." }),
+    incident_id: z.string().uuid({ message: "El ID de la incidencia debe ser un UUID válido." }),
     incidence_date: z.coerce.date({ message: "La fecha de incidencia es inválida." }),
     incidence_observation: z.string().optional(),
 });
@@ -35,7 +29,7 @@ function handleApiError(error: unknown, context: string): NextResponse {
         );
     }
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
         // Ejemplo: Falla de llave foránea
         if (error.code === 'P2003') {
             return NextResponse.json(
@@ -70,12 +64,12 @@ export async function GET(request: NextRequest) {
                 OR: [
                     {
                         employee: { // Búsqueda en el nombre del empleado relacionado
-                            employee_name: { contains: search, mode: "insensitive" },
+                            employeeName: { contains: search, mode: "insensitive" },
                         }
                     },
                     {
                         incident: { // Búsqueda en el nombre de la incidencia relacionada
-                            incident_name: { contains: search, mode: "insensitive" },
+                            incidentName: { contains: search, mode: "insensitive" },
                         }
                     },
                 ],
@@ -83,7 +77,7 @@ export async function GET(request: NextRequest) {
             : {};
 
         const [movements, total] = await prisma.$transaction([
-            prisma.movements.findMany({
+            prisma.movement.findMany({
                 where,
                 skip,
                 take: pageSize,
@@ -92,10 +86,10 @@ export async function GET(request: NextRequest) {
                     incident: true,
                 },
                 orderBy: {
-                    created_at: "desc",
+                    createdAt: "desc",
                 },
             }),
-            prisma.movements.count({ where }),
+            prisma.movement.count({ where }),
         ]);
 
         return NextResponse.json({
@@ -116,16 +110,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { period_id, employee_code, incident_code, incidence_date, incidence_observation } = movementSchema.parse(body);
+        const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
 
-        const movement = await prisma.movements.create({
+        const movement = await prisma.movement.create({
             data: {
-                period_id,
-                employee_code,
-                incident_code,
-                incidence_date,
-                incidence_observation: incidence_observation || '',
-                incidence_status: 1, // Asumiendo que 1 es 'ACTIVO'
+                periodId: period_id,
+                employeeId: employee_id,
+                incidentId: incident_id,
+                incidenceDate: incidence_date,
+                incidenceObservation: incidence_observation || '',
+                incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
             },
         });
 
@@ -152,17 +146,17 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { period_id, employee_code, incident_code, incidence_date, incidence_observation } = movementSchema.parse(body);
+        const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
 
-        const movement = await prisma.movements.update({
+        const movement = await prisma.movement.update({
             where: { id },
             data: {
-                period_id,
-                employee_code,
-                incident_code,
-                incidence_date,
-                incidence_observation: incidence_observation || '',
-                incidence_status: 1, // Asumiendo que 1 es 'ACTIVO'
+                periodId: period_id,
+                employeeId: employee_id,
+                incidentId: incident_id,
+                incidenceDate: incidence_date,
+                incidenceObservation: incidence_observation || '',
+                incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
             },
         });
 
