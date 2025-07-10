@@ -24,21 +24,21 @@ export async function GET(request: NextRequest) {
   const where = search
     ? {
         OR: [
-          { user_name: { contains: search, mode: 'insensitive' } },
-          { user_email: { contains: search, mode: 'insensitive' } },
+          { userName: { contains: search, mode: 'insensitive' } },
+          { userEmail: { contains: search, mode: 'insensitive' } },
         ],
       }
     : {};
 
   try {
     const [users, total] = await Promise.all([
-      prisma.users.findMany({
+      prisma.user.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
-      prisma.users.count({ where }),
+      prisma.user.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -60,17 +60,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
   try {
-    const { user_name, user_email, user_password, user_status, user_rol, company_id, office_id } = await request.json();
-    if (!user_name || !user_email || !user_password || user_status === undefined || user_rol === undefined || !company_id || !office_id) {
+    const { user_name, user_email, user_password, user_status, user_rol, company_id } = await request.json();
+    if (!user_name || !user_email || !user_password || user_status === undefined || user_rol === undefined || !company_id) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const existing = await prisma.users.findFirst({ where: { user_email } });
+    const existing = await prisma.user.findFirst({ where: { userEmail: user_email } });
     if (existing) {
       return NextResponse.json({ message: 'El usuario ya existe' }, { status: 409 });
     }
     const hashedPassword = await bcrypt.hash(user_password, 10);
-    const user = await prisma.users.create({
-      data: { user_name, user_email, user_password: hashedPassword, user_status, user_rol, company_id, office_id }
+    const user = await prisma.user.create({
+      data: {
+        userName: user_name,
+        userEmail: user_email,
+        userPassword: hashedPassword,
+        userStatus: user_status,
+        userRol: user_rol,
+        companyId: company_id
+      }
     });
     
 return NextResponse.json(user);
@@ -86,13 +93,19 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
   try {
-    const { id, user_name, user_email, user_status, user_rol, company_id, office_id } = await request.json();
-    if (!id || !user_name || !user_email || user_status === undefined || user_rol === undefined || !company_id || !office_id) {
+    const { id, user_name, user_email, user_status, user_rol, company_id } = await request.json();
+    if (!id || !user_name || !user_email || user_status === undefined || user_rol === undefined || !company_id) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const user = await prisma.users.update({
+    const user = await prisma.user.update({
       where: { id },
-      data: { user_name, user_email, user_status, user_rol, company_id, office_id }
+      data: {
+        userName: user_name,
+        userEmail: user_email,
+        userStatus: user_status,
+        userRol: user_rol,
+        companyId: company_id
+      }
     });
     
 return NextResponse.json(user);
@@ -112,7 +125,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
-    await prisma.users.delete({ where: { id } });
+    await prisma.user.delete({ where: { id } });
     
 return NextResponse.json({ message: 'Usuario eliminado correctamente' });
   } catch (error) {

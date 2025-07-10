@@ -22,19 +22,19 @@ export async function GET(request: NextRequest) {
 
   const where = search
     ? {
-        company_name: { contains: search, mode: 'insensitive' },
+        companyName: { contains: search, mode: 'insensitive' },
       }
     : {};
 
   try {
     const [companies, total] = await Promise.all([
-      prisma.companies.findMany({
+      prisma.company.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
-      prisma.companies.count({ where }),
+      prisma.company.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
     if (!company_name || company_status === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const company = await prisma.companies.create({
-      data: { company_name, company_status }
+    const company = await prisma.company.create({
+      data: { companyName: company_name, companyStatus: company_status }
     });
     
 return NextResponse.json(company);
@@ -81,9 +81,9 @@ export async function PUT(request: NextRequest) {
     if (!id || !company_name || company_status === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const company = await prisma.companies.update({
+    const company = await prisma.company.update({
       where: { id },
-      data: { company_name, company_status }
+      data: { companyName: company_name, companyStatus: company_status }
     });
     
 return NextResponse.json(company);
@@ -103,7 +103,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
-    await prisma.companies.delete({ where: { id } });
+    await prisma.company.delete({ where: { id } });
     
 return NextResponse.json({ message: 'Compañía eliminada correctamente' });
   } catch (error) {
