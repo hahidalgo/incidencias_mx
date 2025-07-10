@@ -7,154 +7,153 @@ async function main() {
   console.log('🌱 Iniciando seed de la base de datos...');
 
   // Crear empresa
-  const company = await prisma.companies.create({
+  const company = await prisma.company.create({
     data: {
-      company_name: 'Telestar S.A.',
-      company_status: 1,
+      companyName: 'Telestar S.A.',
+      companyStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Empresa creada:', company.company_name);
+  console.log('✅ Empresa creada:', company.companyName);
 
   // Crear oficina
-  const office = await prisma.offices.create({
+  const office = await prisma.office.create({
     data: {
-      company_id: company.id,
-      office_name: 'Culiacan',
-      office_status: 1,
+      companyId: company.id,
+      officeName: 'Culiacan',
+      officeStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Oficina creada:', office.office_name);
+  console.log('✅ Oficina creada:', office.officeName);
 
-  const office1= await prisma.offices.create({
+  const office1 = await prisma.office.create({
     data: {
-      company_id: company.id,
-      office_name: 'Durango',
-      office_status: 1,
+      companyId: company.id,
+      officeName: 'Durango',
+      officeStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Oficina creada:', office1.office_name);
+  console.log('✅ Oficina creada:', office1.officeName);
 
-  const office2 = await prisma.offices.create({
+  const office2 = await prisma.office.create({
     data: {
-      company_id: company.id,
-      office_name: 'Merida',
-      office_status: 1,
+      companyId: company.id,
+      officeName: 'Merida',
+      officeStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Oficina creada:', office2.office_name);
+  console.log('✅ Oficina creada:', office2.officeName);
 
   // Crear usuario con contraseña hasheada
   const hashedPassword = await bcrypt.hash('123456', 10);
-  
-  const user = await prisma.users.create({
+
+  const user = await prisma.user.create({
     data: {
-      company_id: company.id,
-      user_name: 'System Administrator',
-      user_email: 'superadmin@localhost.dev',
-      user_password: hashedPassword,
-      user_status: 1,
-      user_rol: 101,
+      companyId: company.id,
+      userName: 'System Administrator',
+      userEmail: 'superadmin@localhost.dev',
+      userPassword: hashedPassword,
+      userStatus: 'ACTIVE',
+      userRol: 'SUPER_ADMIN',
     },
   });
 
-  console.log('✅ Usuario creado:', user.user_name);
+  console.log('✅ Usuario creado:', user.userName);
 
   // Asociar el usuario a la primera oficina para que el login funcione correctamente
-  await prisma.user_offices.create({
+  await prisma.userOffice.create({
     data: {
-      user_id: user.id,
-      office_id: office.id,
+      userId: user.id,
+      officeId: office.id,
     },
   });
-  console.log(`✅ Usuario ${user.user_name} asociado a la oficina ${office.office_name}`);
+  console.log(`✅ Usuario ${user.userName} asociado a la oficina ${office.officeName}`);
 
-  console.log('📧 Email para login:', user.user_email);
+  console.log('📧 Email para login:', user.userEmail);
   console.log('🔑 Contraseña: 123456');
 
   // Crear empleado para movimientos
-  const employee = await prisma.employees.create({
+  const employee = await prisma.employee.create({
     data: {
-      office_id: office.id,
-      employee_code: 1001,
-      employee_name: 'Juan Pérez',
-      employee_type: 'SIND',
-      employee_bonus_dom: 0,
-      employee_status: 1,
+      officeId: office.id,
+      employeeCode: 1001,
+      employeeName: 'Juan Pérez',
+      employeeType: 'SIND',
+      employeeSundayBonus: 0,
+      employeeStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Empleado creado:', employee.employee_name);
+  console.log('✅ Empleado creado:', employee.employeeName);
 
   // Crear empleado para movimientos
-  const employee01= await prisma.employees.create({
+  const employee01 = await prisma.employee.create({
     data: {
-      office_id: office.id,
-      employee_code: 1002,
-      employee_name: 'Luis Suarez',
-      employee_type: 'SIND',
-      employee_bonus_dom: 0,
-      employee_status: 1,
+      officeId: office.id,
+      employeeCode: 1002,
+      employeeName: 'Luis Suarez',
+      employeeType: 'SIND',
+      employeeSundayBonus: 0,
+      employeeStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Empleado creado:', employee01.employee_name);
+  console.log('✅ Empleado creado:', employee01.employeeName);
 
   // Crear empleado para movimientos
-  const employee02 = await prisma.employees.create({
+  const employee02 = await prisma.employee.create({
     data: {
-      office_id: office.id,
-      employee_code: 1003,
-      employee_name: 'Manuel Garcia',
-      employee_type: 'CONF',
-      employee_bonus_dom: 0,
-      employee_status: 1,
+      officeId: office.id,
+      employeeCode: 1003,
+      employeeName: 'Manuel Garcia',
+      employeeType: 'CONF',
+      employeeSundayBonus: 0,
+      employeeStatus: 'ACTIVE',
     },
   });
 
-  console.log('✅ Empleado creado:', employee02.employee_name);
+  console.log('✅ Empleado creado:', employee02.employeeName);
 
   // Crear algunas incidencias de ejemplo
   const incidents = await Promise.all([
-    prisma.incidents.create({
+    prisma.incident.create({
       data: {
-        incident_code: '005',
-        incident_name: 'Descansos Trabajados',
-        incident_status: 1,
+        incidentCode: '005',
+        incidentName: 'Descansos Trabajados',
+        incidentStatus: 'ACTIVE',
       },
     }),
-    prisma.incidents.create({
+    prisma.incident.create({
       data: {
-        incident_code: '008',
-        incident_name: 'Prima Dominical',
-        incident_status: 1,
+        incidentCode: '008',
+        incidentName: 'Prima Dominical',
+        incidentStatus: 'ACTIVE',
       },
     }),
-    prisma.incidents.create({
+    prisma.incident.create({
       data: {
-        incident_code: '009',
-        incident_name: 'Dias Devueltos',
-        incident_status: 1,
+        incidentCode: '009',
+        incidentName: 'Dias Devueltos',
+        incidentStatus: 'ACTIVE',
       },
     }),
-    prisma.incidents.create({
+    prisma.incident.create({
       data: {
-        incident_code: '215',
-        incident_name: 'Faltas',
-        incident_status: 1,
+        incidentCode: '215',
+        incidentName: 'Faltas',
+        incidentStatus: 'ACTIVE',
       },
     }),
   ]);
 
   console.log('✅ Incidencias creadas:', incidents.length);
 
-
   console.log('🎉 Seed completado exitosamente!');
   console.log('\n📋 Credenciales para probar el login:');
-  console.log(`   Email: ${user.user_email}`);
+  console.log(`   Email: ${user.userEmail}`);
   console.log('   Contraseña: 123456');
 }
 
