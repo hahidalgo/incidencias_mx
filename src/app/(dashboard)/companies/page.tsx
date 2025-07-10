@@ -45,16 +45,16 @@ import {
 
 interface Company {
   id: string;
-  company_name: string;
-  company_status: number;
+  companyName: string;
+  companyStatus: string;
 }
 
 interface CompanyForm {
-  company_name: string;
-  company_status: number;
+  companyName: string;
+  companyStatus: string;
 }
 
-const initialForm: CompanyForm = { company_name: '', company_status: 1 };
+const initialForm: CompanyForm = { companyName: '', companyStatus: 'ACTIVE' };
 const PAGE_SIZE = 7;
 
 export default function CompaniesPage() {
@@ -125,8 +125,8 @@ export default function CompaniesPage() {
     setIsEdit(true);
     setCurrentCompany(company);
     setForm({
-      company_name: company.company_name,
-      company_status: company.company_status,
+      companyName: company.companyName,
+      companyStatus: company.companyStatus,
     });
     setIsModalOpen(true);
   };
@@ -220,10 +220,10 @@ export default function CompaniesPage() {
             ) : (
               companies.map((company) => (
                 <TableRow key={company.id}>
-                  <TableCell className="font-medium">{company.company_name}</TableCell>
+                  <TableCell className="font-medium">{company.companyName}</TableCell>
                   <TableCell>
-                    <Badge variant={company.company_status === 1 ? 'default' : 'destructive'}>
-                      {company.company_status === 1 ? 'Activo' : 'Inactivo'}
+                    <Badge variant={company.companyStatus === 'ACTIVE' ? 'default' : 'destructive'}>
+                      {company.companyStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -251,14 +251,14 @@ export default function CompaniesPage() {
             <DialogHeader><DialogTitle>{isEdit ? 'Editar Compañía' : 'Nueva Compañía'}</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="company_name" className="text-right">Nombre</Label>
-                <Input id="company_name" name="company_name" value={form.company_name} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="companyName" className="text-right">Nombre</Label>
+                <Input id="companyName" name="companyName" value={form.companyName} onChange={handleFormChange} required className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="company_status" className="text-right">Status</Label>
-                <Select onValueChange={(value) => handleSelectChange('company_status', Number(value))} value={String(form.company_status)}>
+                <Label htmlFor="companyStatus" className="text-right">Status</Label>
+                <Select onValueChange={(value) => handleSelectChange('companyStatus', Number(value))} value={String(form.companyStatus)}>
                   <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="1">Activo</SelectItem><SelectItem value="0">Inactivo</SelectItem></SelectContent>
+                  <SelectContent><SelectItem value="ACTIVE">Activo</SelectItem><SelectItem value="INACTIVE">Inactivo</SelectItem></SelectContent>
                 </Select>
               </div>
             </div>

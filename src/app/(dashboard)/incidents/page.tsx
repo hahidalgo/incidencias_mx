@@ -42,18 +42,18 @@ import {
 
 interface Incident {
   id: string;
-  incident_code: string;
-  incident_name: string;
-  incident_status: number;
+  incidentCode: string;
+  incidentName: string;
+  incidentStatus: string;
 }
 
 interface IncidentForm {
-  incident_code: string;
-  incident_name: string;
-  incident_status: number;
+  incidentCode: string;
+  incidentName: string;
+  incidentStatus: string;
 }
 
-const initialForm: IncidentForm = { incident_code: '', incident_name: '', incident_status: 1 };
+const initialForm: IncidentForm = { incidentCode: '', incidentName: '', incidentStatus: 'ACTIVE' };
 const PAGE_SIZE = 7;
 
 export default function IncidentsPage() {
@@ -124,9 +124,9 @@ export default function IncidentsPage() {
     setIsEdit(true);
     setCurrentIncident(incident);
     setForm({
-      incident_code: incident.incident_code,
-      incident_name: incident.incident_name,
-      incident_status: incident.incident_status,
+      incidentCode: incident.incidentCode,
+      incidentName: incident.incidentName,
+      incidentStatus: incident.incidentStatus,
     });
     setIsModalOpen(true);
   };
@@ -145,7 +145,19 @@ export default function IncidentsPage() {
     setActionLoading(true);
     try {
       const method = isEdit ? 'PUT' : 'POST';
-      const body = isEdit ? { ...form, id: currentIncident?.id } : form;
+      // Transformar los campos a snake_case como espera el backend
+      const body = isEdit
+        ? {
+            id: currentIncident?.id,
+            incident_code: form.incidentCode,
+            incident_name: form.incidentName,
+            incident_status: form.incidentStatus,
+          }
+        : {
+            incident_code: form.incidentCode,
+            incident_name: form.incidentName,
+            incident_status: form.incidentStatus,
+          };
 
       const res = await fetch('/api/incidents', {
         method,
@@ -217,11 +229,11 @@ export default function IncidentsPage() {
             ) : (
               incidents.map((incident) => (
                 <TableRow key={incident.id}>
-                  <TableCell className="font-mono text-sm">{incident.incident_code}</TableCell>
-                  <TableCell className="font-medium">{incident.incident_name}</TableCell>
+                  <TableCell className="font-mono text-sm">{incident.incidentCode}</TableCell>
+                  <TableCell className="font-medium">{incident.incidentName}</TableCell>
                   <TableCell>
-                    <Badge variant={incident.incident_status === 1 ? 'default' : 'destructive'}>
-                      {incident.incident_status === 1 ? 'Activo' : 'Inactivo'}
+                    <Badge variant={incident.incidentStatus === 'ACTIVE' ? 'default' : 'destructive'}>
+                      {incident.incidentStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -249,18 +261,21 @@ export default function IncidentsPage() {
             <DialogHeader><DialogTitle>{isEdit ? 'Editar Incidencia' : 'Nueva Incidencia'}</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="incident_code" className="text-right">Código</Label>
-                <Input id="incident_code" name="incident_code" value={form.incident_code} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="incidentCode" className="text-right">Código</Label>
+                <Input id="incidentCode" name="incidentCode" value={form.incidentCode} onChange={handleFormChange} required className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="incident_name" className="text-right">Nombre</Label>
-                <Input id="incident_name" name="incident_name" value={form.incident_name} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="incidentName" className="text-right">Nombre</Label>
+                <Input id="incidentName" name="incidentName" value={form.incidentName} onChange={handleFormChange} required className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="incident_status" className="text-right">Status</Label>
-                <Select onValueChange={(value) => handleSelectChange('incident_status', Number(value))} value={String(form.incident_status)}>
+                <Label htmlFor="incidentStatus" className="text-right">Status</Label>
+                <Select onValueChange={(value) => handleSelectChange('incidentStatus', value)} value={form.incidentStatus}>
                   <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="1">Activo</SelectItem><SelectItem value="0">Inactivo</SelectItem></SelectContent>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Activo</SelectItem>
+                    <SelectItem value="INACTIVE">Inactivo</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
             </div>

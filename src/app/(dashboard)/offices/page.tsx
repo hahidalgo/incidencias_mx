@@ -46,23 +46,23 @@ import {
 
 interface Office {
   id: string;
-  company_id: string;
-  office_name: string;
-  office_status: number;
+  companyId: string;
+  officeName: string;
+  officeStatus: string;
 }
 
 interface Company {
   id: string;
-  company_name: string;
+  companyName: string;
 }
 
 interface OfficeForm {
-  company_id: string;
-  office_name: string;
-  office_status: number;
+  companyId: string;
+  officeName: string;
+  officeStatus: string;
 }
 
-const initialForm: OfficeForm = { company_id: '', office_name: '', office_status: 1 };
+const initialForm: OfficeForm = { companyId: '', officeName: '', officeStatus: 'ACTIVE' };
 const PAGE_SIZE = 7;
 
 export default function OfficesPage() {
@@ -128,7 +128,8 @@ export default function OfficesPage() {
         const data = await res.json();
         const companyData = data.companies || [];
         setCompanies(companyData);
-        setCompanyMap(new Map(companyData.map((c: Company) => [c.id, c.company_name])));
+        setCompanyMap(new Map(companyData.map((c: Company) => [c.id, c.companyName])));
+
       } catch (e: any) {
         toast.error(e.message);
       }
@@ -152,9 +153,9 @@ export default function OfficesPage() {
     setIsEdit(true);
     setCurrentOffice(office);
     setForm({
-      company_id: office.company_id,
-      office_name: office.office_name,
-      office_status: office.office_status,
+      companyId: office.companyId,
+      officeName: office.officeName,
+      officeStatus: office.officeStatus,
     });
     setIsModalOpen(true);
   };
@@ -174,7 +175,19 @@ export default function OfficesPage() {
     try {
       const method = isEdit ? 'PUT' : 'POST';
       const url = '/api/offices';
-      const body = isEdit ? { ...form, id: currentOffice?.id } : form;
+      // Transformar los campos a snake_case como espera el backend
+      const body = isEdit
+        ? {
+            id: currentOffice?.id,
+            company_id: form.companyId,
+            office_name: form.officeName,
+            office_status: form.officeStatus,
+          }
+        : {
+            company_id: form.companyId,
+            office_name: form.officeName,
+            office_status: form.officeStatus,
+          };
 
       const res = await fetch('/api/offices', {
         method,
@@ -233,7 +246,7 @@ export default function OfficesPage() {
         <Table>
           <TableHeader>
             <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
-              <TableHead className="w-24 text-white">ID</TableHead>
+              
               <TableHead className='text-white'>Nombre</TableHead>
               <TableHead className='text-white'>Empresa</TableHead>
               <TableHead className="w-32 text-white">Status</TableHead>
@@ -248,12 +261,12 @@ export default function OfficesPage() {
             ) : (
               offices.map((office) => (
                 <TableRow key={office.id}>
-                  <TableCell className="font-mono text-xs">{office.id.slice(0, 8)}</TableCell>
-                  <TableCell className="font-medium">{office.office_name}</TableCell>
-                  <TableCell>{companyMap.get(office.company_id) || 'N/A'}</TableCell>
+                  
+                  <TableCell className="font-medium">{office.officeName}</TableCell>
+                  <TableCell>{companyMap.get(office.companyId) || 'N/A'}</TableCell>
                   <TableCell>
-                    <Badge variant={office.office_status === 1 ? 'default' : 'destructive'}>
-                      {office.office_status === 1 ? 'Activo' : 'Inactivo'}
+                    <Badge variant={office.officeStatus === 'ACTIVE' ? 'default' : 'destructive'}>
+                      {office.officeStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -284,23 +297,23 @@ export default function OfficesPage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="company_id" className="text-right">Empresa</Label>
-                <Select required onValueChange={(value) => handleSelectChange('company_id', value)} value={form.company_id}>
+                <Label htmlFor="companyId" className="text-right">Empresa</Label>
+                <Select required onValueChange={(value) => handleSelectChange('companyId', value)} value={form.companyId}>
                   <SelectTrigger className="col-span-3"><SelectValue placeholder="Selecciona una empresa" /></SelectTrigger>
-                  <SelectContent>{companies.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}</SelectContent>
+                  <SelectContent>{companies.map(c => <SelectItem key={c.id} value={c.id}>{c.companyName}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="office_name" className="text-right">Nombre</Label>
-                <Input id="office_name" name="office_name" value={form.office_name} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="officeName" className="text-right">Nombre</Label>
+                <Input id="officeName" name="officeName" value={form.officeName} onChange={handleFormChange} required className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="office_status" className="text-right">Status</Label>
-                <Select onValueChange={(value) => handleSelectChange('office_status', Number(value))} value={String(form.office_status)}>
+                <Select onValueChange={(value) => handleSelectChange('officeStatus', value)} value={form.officeStatus}>
                   <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Activo</SelectItem>
-                    <SelectItem value="0">Inactivo</SelectItem>
+                    <SelectItem value="ACTIVE">Activo</SelectItem>
+                    <SelectItem value="INACTIVE">Inactivo</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

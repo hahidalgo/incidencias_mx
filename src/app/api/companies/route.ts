@@ -56,12 +56,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
   try {
-    const { company_name, company_status } = await request.json();
-    if (!company_name || company_status === undefined) {
+    const { companyName, companyStatus } = await request.json();
+    if (!companyName || companyStatus === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     const company = await prisma.company.create({
-      data: { companyName: company_name, companyStatus: company_status }
+      data: { companyName, companyStatus }
     });
     
 return NextResponse.json(company);
@@ -77,13 +77,13 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
   try {
-    const { id, company_name, company_status } = await request.json();
-    if (!id || !company_name || company_status === undefined) {
+    const { id, companyName, companyStatus } = await request.json();
+    if (!id || !companyName || companyStatus === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     const company = await prisma.company.update({
       where: { id },
-      data: { companyName: company_name, companyStatus: company_status }
+      data: { companyName, companyStatus }
     });
     
 return NextResponse.json(company);
