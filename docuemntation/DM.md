@@ -9,11 +9,12 @@ erDiagram
   offices }o--o| user_offices : "has"
   employees ||--o{ movements : "registers"
   incidents ||--o{ movements : "has"
+  periods ||--o{ movements : "has"
 
   companies {
     id string
     company_name string
-    company_status int
+    company_status enum
     created_at datetime
     updated_at datetime
   }
@@ -21,7 +22,7 @@ erDiagram
     id string
     company_id string
     office_name string
-    office_status int
+    office_status enum
     created_at datetime
     updated_at datetime
   }
@@ -32,7 +33,7 @@ erDiagram
     employee_name string
     employee_type string
     employee_bonus_dom int
-    employee_status int
+    employee_status enum
     created_at datetime
     updated_at datetime
   }
@@ -40,17 +41,27 @@ erDiagram
     id string
     incident_code string
     incident_name string
-    incident_status int
+    incident_status enum
+    created_at datetime
+    updated_at datetime
+  }
+  periods {
+    id string
+    period_name string
+    period_start datetime
+    period_end datetime
+    period_status enum
     created_at datetime
     updated_at datetime
   }
   movements {
     id string
-    employee_code int
-    incident_code string
+    period_id string
+    employee_id string
+    incident_id string
     incidence_date datetime
     incidence_observation string
-    incidence_status int
+    incidence_status enum
     created_at datetime
     updated_at datetime
   }
@@ -60,8 +71,8 @@ erDiagram
     user_name string
     user_email string
     user_password string
-    user_status int
-    user_rol int
+    user_status enum
+    user_rol enum
     created_at datetime
     updated_at datetime
   }
@@ -69,15 +80,6 @@ erDiagram
     id string
     user_id string
     office_id string
-    created_at datetime
-    updated_at datetime
-  }
-  periods {
-    id string
-    period_name string
-    period_start datetime
-    period_end datetime
-    period_status int
     created_at datetime
     updated_at datetime
   }
