@@ -22,19 +22,19 @@ export async function GET(request: NextRequest) {
 
   const where = search
     ? {
-        office_name: { contains: search, mode: 'insensitive' },
+        officeName: { contains: search, mode: 'insensitive' },
       }
     : {};
 
   try {
     const [offices, total] = await Promise.all([
-      prisma.offices.findMany({
+      prisma.office.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
-      prisma.offices.count({ where }),
+      prisma.office.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -62,11 +62,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
 
     }
-    const office = await prisma.offices.create({
+    const office = await prisma.office.create({
       data: {
-        company_id,
-        office_name,
-        office_status
+        companyId: company_id,
+        officeName: office_name,
+        officeStatus: office_status
       }
     });
 
@@ -89,12 +89,12 @@ export async function PUT(request: NextRequest) {
 
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const office = await prisma.offices.update({
+    const office = await prisma.office.update({
       where: { id },
       data: {
-        company_id,
-        office_name,
-        office_status
+        companyId: company_id,
+        officeName: office_name,
+        officeStatus: office_status
       }
     });
 
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
-    await prisma.offices.delete({ where: { id } });
+    await prisma.office.delete({ where: { id } });
     
     return NextResponse.json({ message: 'Oficina eliminada correctamente' });
   } catch (error) {

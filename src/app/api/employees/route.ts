@@ -26,23 +26,23 @@ export async function GET(request: NextRequest) {
     const whereClause = search
       ? {
           OR: [
-            { employee_name: { contains: search, mode: 'insensitive' } },
-            { employee_type: { contains: search, mode: 'insensitive' } },
+            { employeeName: { contains: search, mode: 'insensitive' } },
+            { employeeType: { contains: search, mode: 'insensitive' } },
           ],
         }
       : {};
 
     const [employees, total] = await prisma.$transaction([
-      prisma.employees.findMany({
+      prisma.employee.findMany({
         where: whereClause,
         include: {
-          office: { select: { office_name: true } },
+          office: { select: { officeName: true } },
         },
         skip,
         take: pageSize,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
-      prisma.employees.count({ where: whereClause }),
+      prisma.employee.count({ where: whereClause }),
     ]);
 
     return NextResponse.json({ employees, total, totalPages: Math.ceil(total / pageSize) });
@@ -62,8 +62,14 @@ export async function POST(request: NextRequest) {
     if (!office_id || !employee_code || !employee_name || !employee_type || employee_status === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const employee = await prisma.employees.create({
-      data: { office_id, employee_code, employee_name, employee_type, employee_status }
+    const employee = await prisma.employee.create({
+      data: {
+        officeId: office_id,
+        employeeCode: employee_code,
+        employeeName: employee_name,
+        employeeType: employee_type,
+        employeeStatus: employee_status
+      }
     });
     
 return NextResponse.json(employee);
@@ -83,9 +89,15 @@ export async function PUT(request: NextRequest) {
     if (!id || !office_id || !employee_code || !employee_name || !employee_type || employee_status === undefined) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
-    const employee = await prisma.employees.update({
+    const employee = await prisma.employee.update({
       where: { id },
-      data: { office_id, employee_code, employee_name, employee_type, employee_status }
+      data: {
+        officeId: office_id,
+        employeeCode: employee_code,
+        employeeName: employee_name,
+        employeeType: employee_type,
+        employeeStatus: employee_status
+      }
     });
     
 return NextResponse.json(employee);
@@ -105,7 +117,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
-    await prisma.employees.delete({ where: { id } });
+    await prisma.employee.delete({ where: { id } });
     
 return NextResponse.json({ message: 'Empleado eliminado correctamente' });
   } catch (error) {

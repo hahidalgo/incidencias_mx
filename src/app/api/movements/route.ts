@@ -1,14 +1,16 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/prisma/client";
 import { z } from 'zod';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 // Esquema de validación para la creación y actualización de movimientos.
 // Usamos `z.coerce.date()` para convertir el string de fecha que llega en el JSON a un objeto Date.
 const movementSchema = z.object({
-    employeeCode: z.coerce.number({ invalid_type_error: "El código de empleado debe ser un número." }).int().positive({ message: "El código de empleado es requerido y debe ser positivo." }),
-    incidentCode: z.string().min(1, { message: "El código de la incidencia es requerido." }),
-    incidenceDate: z.coerce.date({ message: "La fecha de incidencia es inválida." }),
-    incidenceObservation: z.string().optional(),
+    period_id: z.string().uuid({ message: "El ID del período debe ser un UUID válido." }),
+    employee_id: z.string().uuid({ message: "El ID del empleado debe ser un UUID válido." }),
+    incident_id: z.string().uuid({ message: "El ID de la incidencia debe ser un UUID válido." }),
+    incidence_date: z.coerce.date({ message: "La fecha de incidencia es inválida." }),
+    incidence_observation: z.string().optional(),
 });
 
 /**
@@ -25,6 +27,16 @@ function handleApiError(error: unknown, context: string): NextResponse {
             { message: "Datos de entrada inválidos", errors: error.errors },
             { status: 400 }
         );
+    }
+
+    if (error instanceof PrismaClientKnownRequestError) {
+        // Ejemplo: Falla de llave foránea
+        if (error.code === 'P2003') {
+            return NextResponse.json(
+                { message: `Error de referencia: El registro relacionado en '${error.meta?.field_name}' no fue encontrado.` },
+                { status: 404 }
+            );
+        }
     }
 
     return NextResponse.json(
@@ -51,21 +63,21 @@ export async function GET(request: NextRequest) {
             ? {
                 OR: [
                     {
-                        employee: {
-                            employee_name: { contains: search, mode: "insensitive" },
-                        },
+                        employee: { // Búsqueda en el nombre del empleado relacionado
+                            employeeName: { contains: search, mode: "insensitive" },
+                        }
                     },
                     {
-                        incident: {
-                            incident_name: { contains: search, mode: "insensitive" },
-                        },
+                        incident: { // Búsqueda en el nombre de la incidencia relacionada
+                            incidentName: { contains: search, mode: "insensitive" },
+                        }
                     },
                 ],
             }
             : {};
 
         const [movements, total] = await prisma.$transaction([
-            prisma.movements.findMany({
+            prisma.movement.findMany({
                 where,
                 skip,
                 take: pageSize,
@@ -74,10 +86,10 @@ export async function GET(request: NextRequest) {
                     incident: true,
                 },
                 orderBy: {
-                    created_at: "desc",
+                    createdAt: "desc",
                 },
             }),
-            prisma.movements.count({ where }),
+            prisma.movement.count({ where }),
         ]);
 
         return NextResponse.json({
@@ -86,14 +98,7 @@ export async function GET(request: NextRequest) {
             totalPages: Math.ceil(total / pageSize),
         });
     } catch (error) {
-        // Aunque tenemos un manejador de errores genérico, para GET es más simple
-        // mantenerlo aquí ya que no necesita manejar ZodError.
-        console.error("Error fetching movements:", error);
-        
-        return NextResponse.json(
-            { message: "Error al obtener los movimientos." },
-            { status: 500 }
-        );
+        return handleApiError(error, 'MOVEMENTS_GET');
     }
 }
 
@@ -105,15 +110,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { employeeCode, incidentCode, incidenceDate, incidenceObservation } = movementSchema.parse(body);
+        const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
 
-        const movement = await prisma.movements.create({
-            data: { 
-                employee_code: employeeCode, 
-                incident_code: incidentCode, 
-                incidence_date: incidenceDate,
-                incidence_observation: incidenceObservation || '',
-                incidence_status: 1,
+        const movement = await prisma.movement.create({
+            data: {
+                periodId: period_id,
+                employeeId: employee_id,
+                incidentId: incident_id,
+                incidenceDate: incidence_date,
+                incidenceObservation: incidence_observation || '',
+                incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
             },
         });
 
@@ -140,16 +146,17 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { employeeCode, incidentCode, incidenceDate, incidenceObservation } = movementSchema.parse(body);
+        const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
 
-        const movement = await prisma.movements.update({
+        const movement = await prisma.movement.update({
             where: { id },
-            data: { 
-                employee_code: employeeCode, 
-                incident_code: incidentCode, 
-                incidence_date: incidenceDate,
-                incidence_observation: incidenceObservation || '',
-                incidence_status: 1,
+            data: {
+                periodId: period_id,
+                employeeId: employee_id,
+                incidentId: incident_id,
+                incidenceDate: incidence_date,
+                incidenceObservation: incidence_observation || '',
+                incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
             },
         });
 

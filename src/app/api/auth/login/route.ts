@@ -19,10 +19,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar el usuario por email
-    const user = await prisma.users.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
-        user_email: email,
-        user_status: 1, // Asumiendo que 1 es activo
+        userEmail: email,
+        userStatus: 'ACTIVE', // Usar el enum definido en Prisma
       },
     });
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar la contraseña
-    const isPasswordValid = await bcrypt.compare(password, user.user_password);
+    const isPasswordValid = await bcrypt.compare(password, user.userPassword);
 
     if (!isPasswordValid) {
       
@@ -48,11 +48,10 @@ export async function POST(request: NextRequest) {
     // Crear la sesión del usuario
     const userSession = {
       id: user.id,
-      name: user.user_name,
-      email: user.user_email,
-      role: user.user_rol,
-      companyId: user.company_id,
-      officeId: user.office_id,
+      name: user.userName,
+      email: user.userEmail,
+      role: user.userRol,
+      companyId: user.companyId,
     };
 
     // Generar JWT

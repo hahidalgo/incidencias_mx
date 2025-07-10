@@ -67,9 +67,9 @@ Un sistema moderno para la gestión de incidencias desarrollado con Next.js 15, 
 
 ## 🔐 Credenciales de Prueba
 
-Después de ejecutar el seed, puedes usar estas credenciales:
+Después de ejecutar el `seed`, puedes usar estas credenciales:
 
-- **Email:** juan.perez@ejemplo.com
+- **Email:** `superadmin@localhost.dev`
 - **Contraseña:** 123456
 
 ## 📁 Estructura del Proyecto
@@ -93,9 +93,12 @@ src/
 
 - **companies:** Empresas
 - **offices:** Oficinas
-- **employees:** Empleados (con autenticación por email)
-- **incidents:** Tipos de incidencias
-- **movements:** Registro de movimientos/incidencias
+- **users:** Usuarios del sistema (con roles y autenticación)
+- **user_offices:** Tabla intermedia para la relación N:N entre usuarios y oficinas.
+- **employees:** Empleados de la compañía.
+- **incidents:** Tipos de incidencias (faltas, descansos, etc.).
+- **movements:** Registro de movimientos/incidencias por empleado.
+- **periods:** Periodos de tiempo para agrupar incidencias.
 
 ## 🎨 Tecnologías Utilizadas
 
@@ -168,4 +171,3 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 <p align="center">
   <img src="assets/logo-soaint-azul.png" alt="Logo del Proyecto">
 </p>
-
