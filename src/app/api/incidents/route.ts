@@ -20,22 +20,22 @@ export async function GET(request: NextRequest) {
     const where = search
       ? {
           OR: [
-            { incident_name: { contains: search, mode: 'insensitive' as const } },
-            { incident_code: { contains: search, mode: 'insensitive' as const } },
+            { incidentName: { contains: search, mode: 'insensitive' as const } },
+            { incidentCode: { contains: search, mode: 'insensitive' as const } },
           ],
         }
       : {};
 
     const [incidents, total] = await prisma.$transaction([
-      prisma.incidents.findMany({
+      prisma.incident.findMany({
         where,
         skip,
         take: pageSize,
         orderBy: {
-          created_at: 'desc',
+          createdAt: 'desc',
         },
       }),
-      prisma.incidents.count({ where }),
+      prisma.incident.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -70,11 +70,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newIncident = await prisma.incidents.create({
+    const newIncident = await prisma.incident.create({
       data: {
-        incident_code,
-        incident_name,
-        incident_status: incident_status !== undefined ? incident_status : 1,
+        incidentCode: incident_code,
+        incidentName: incident_name,
+        incidentStatus: incident_status !== undefined ? incident_status : 'ACTIVE',
       },
     });
 
@@ -103,9 +103,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ message: 'El ID de la incidencia es requerido.' }, { status: 400 });
     }
 
-    const updatedIncident = await prisma.incidents.update({
+    // Mapear los campos a camelCase si vienen en snake_case
+    const dataToUpdate: any = {};
+    if (incidentData.incident_code !== undefined) dataToUpdate.incidentCode = incidentData.incident_code;
+    if (incidentData.incident_name !== undefined) dataToUpdate.incidentName = incidentData.incident_name;
+    if (incidentData.incident_status !== undefined) dataToUpdate.incidentStatus = incidentData.incident_status;
+    // Si se agregan más campos, mapéalos aquí
+
+    const updatedIncident = await prisma.incident.update({
       where: { id },
-      data: incidentData,
+      data: dataToUpdate,
     });
 
     return NextResponse.json(updatedIncident);
@@ -133,7 +140,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El ID de la incidencia es requerido.' }, { status: 400 });
     }
 
-    await prisma.incidents.delete({
+    await prisma.incident.delete({
       where: { id },
     });
 
