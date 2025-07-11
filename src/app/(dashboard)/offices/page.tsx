@@ -1,29 +1,12 @@
-'use client';
-import React, { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+"use client";
+import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { Heading } from "@/components/ui/heading";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
 //import { Button } from '@/registry/new-york-v4/ui/button';
-import { Input } from '@/registry/new-york-v4/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/registry/new-york-v4/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/registry/new-york-v4/ui/dialog';
+import getCookie from "@/lib/getToken";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,22 +16,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/registry/new-york-v4/ui/alert-dialog';
-import { Badge } from '@/registry/new-york-v4/ui/badge';
-import { Label } from '@/registry/new-york-v4/ui/label';
+} from "@/registry/new-york-v4/ui/alert-dialog";
+import { Badge } from "@/registry/new-york-v4/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/registry/new-york-v4/ui/dialog";
+import { Input } from "@/registry/new-york-v4/ui/input";
+import { Label } from "@/registry/new-york-v4/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/registry/new-york-v4/ui/select';
+} from "@/registry/new-york-v4/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/registry/new-york-v4/ui/table";
 
 interface Office {
   id: string;
   company_id: string;
   office_name: string;
   office_status: number;
+  company_name: string;
 }
 
 interface Company {
@@ -62,7 +62,11 @@ interface OfficeForm {
   office_status: number;
 }
 
-const initialForm: OfficeForm = { company_id: '', office_name: '', office_status: 1 };
+const initialForm: OfficeForm = {
+  company_id: "",
+  office_name: "",
+  office_status: 1,
+};
 const PAGE_SIZE = 7;
 
 export default function OfficesPage() {
@@ -73,8 +77,8 @@ export default function OfficesPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -91,22 +95,32 @@ export default function OfficesPage() {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
-    
+
     return () => clearTimeout(timer);
   }, [search]);
 
   const fetchOffices = useCallback(async () => {
     setLoading(true);
+    const token = getCookie("token");
     try {
       const params = new URLSearchParams({
         page: String(page),
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(`/api/offices?${params.toString()}`);
-      if (!res.ok) throw new Error('No se pudieron obtener las oficinas.');
+      const res = await fetch(
+        `http://localhost:3022/api/v1/offices?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("No se pudieron obtener las oficinas.");
       const data = await res.json();
-      setOffices(data.offices || []);
+      setOffices(data.data || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
     } catch (e: any) {
@@ -123,12 +137,23 @@ export default function OfficesPage() {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await fetch('/api/companies?page=1&pageSize=1000'); // Fetch all companies
-        if (!res.ok) throw new Error('No se pudieron obtener las empresas.');
+        const res = await fetch(
+          "http://localhost:3022/api/v1/companies?page=1&pageSize=1000",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          }
+        ); // Fetch all companies
+        if (!res.ok) throw new Error("No se pudieron obtener las empresas.");
         const data = await res.json();
         const companyData = data.companies || [];
         setCompanies(companyData);
-        setCompanyMap(new Map(companyData.map((c: Company) => [c.id, c.company_name])));
+        setCompanyMap(
+          new Map(companyData.map((c: Company) => [c.id, c.company_name]))
+        );
       } catch (e: any) {
         toast.error(e.message);
       }
@@ -164,7 +189,10 @@ export default function OfficesPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name: keyof OfficeForm, value: string | number) => {
+  const handleSelectChange = (
+    name: keyof OfficeForm,
+    value: string | number
+  ) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -172,20 +200,24 @@ export default function OfficesPage() {
     e.preventDefault();
     setActionLoading(true);
     try {
-      const method = isEdit ? 'PUT' : 'POST';
-      const url = '/api/offices';
+      const method = isEdit ? "PUT" : "POST";
+      const url = "http://localhost:3022/api/v1/offices";
       const body = isEdit ? { ...form, id: currentOffice?.id } : form;
 
-      const res = await fetch('/api/offices', {
+      const res = await fetch("http://localhost:3022/api/v1/offices", {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
         body: JSON.stringify(body),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al guardar la oficina.');
+      if (!res.ok)
+        throw new Error(data.message || "Error al guardar la oficina.");
 
-      toast.success(`Oficina ${isEdit ? 'actualizada' : 'creada'} con éxito.`);
+      toast.success(`Oficina ${isEdit ? "actualizada" : "creada"} con éxito.`);
       setIsModalOpen(false);
       fetchOffices();
     } catch (e: any) {
@@ -199,16 +231,20 @@ export default function OfficesPage() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch('/api/offices', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:3022/api/v1/offices", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
         body: JSON.stringify({ id: deleteId }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al eliminar la oficina.');
+      if (!res.ok)
+        throw new Error(data.message || "Error al eliminar la oficina.");
 
-      toast.success('Oficina eliminada con éxito.');
+      toast.success("Oficina eliminada con éxito.");
       setDeleteId(null);
       fetchOffices();
     } catch (e: any) {
@@ -223,7 +259,12 @@ export default function OfficesPage() {
       <div className="flex items-center">
         <h2 className="text-3xl font-bold">Oficinas</h2>
         <div className="ml-auto flex items-center gap-2">
-          <Input placeholder="Buscar oficina..." value={search} onChange={handleSearch} className="w-64" />
+          <Input
+            placeholder="Buscar oficina..."
+            value={search}
+            onChange={handleSearch}
+            className="w-64"
+          />
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Nueva Oficina
           </Button>
@@ -232,33 +273,66 @@ export default function OfficesPage() {
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
+            <TableRow className="bg-blue-950 text-white hover:bg-blue-800">
               <TableHead className="w-24 text-white">ID</TableHead>
-              <TableHead className='text-white'>Nombre</TableHead>
-              <TableHead className='text-white'>Empresa</TableHead>
+              <TableHead className="text-white">Nombre</TableHead>
+              <TableHead className="text-white">Empresa</TableHead>
               <TableHead className="w-32 text-white">Status</TableHead>
-              <TableHead className="w-32 text-white text-right">Acciones</TableHead>
+              <TableHead className="w-32 text-white text-right">
+                Acciones
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center h-24">Cargando...</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={5} className="text-center h-24">
+                  Cargando...
+                </TableCell>
+              </TableRow>
             ) : offices.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center h-24">No se encontraron oficinas.</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={5} className="text-center h-24">
+                  No se encontraron oficinas.
+                </TableCell>
+              </TableRow>
             ) : (
               offices.map((office) => (
                 <TableRow key={office.id}>
-                  <TableCell className="font-mono text-xs">{office.id.slice(0, 8)}</TableCell>
-                  <TableCell className="font-medium">{office.office_name}</TableCell>
-                  <TableCell>{companyMap.get(office.company_id) || 'N/A'}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {office.id.slice(0, 8)}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {office.office_name}
+                  </TableCell>
+                  <TableCell>{office.company_name || "N/A"}</TableCell>
                   <TableCell>
-                    <Badge variant={office.office_status === 1 ? 'default' : 'destructive'}>
-                      {office.office_status === 1 ? 'Activo' : 'Inactivo'}
+                    <Badge
+                      variant={
+                        office.office_status === 1 ? "default" : "destructive"
+                      }
+                    >
+                      {office.office_status === 1 ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(office)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { setDeleteId(office.id); setConfirmDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEdit(office)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeleteId(office.id);
+                        setConfirmDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -269,9 +343,25 @@ export default function OfficesPage() {
       <div className="flex justify-between items-center text-sm text-muted-foreground">
         <div>Total: {total} oficinas</div>
         <div className="flex items-center gap-2">
-          <span>Página {page} de {totalPages}</span>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Anterior</Button>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Siguiente</Button>
+          <span>
+            Página {page} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Siguiente
+          </Button>
         </div>
       </div>
 
@@ -280,24 +370,60 @@ export default function OfficesPage() {
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{isEdit ? 'Editar Oficina' : 'Nueva Oficina'}</DialogTitle>
+              <DialogTitle>
+                {isEdit ? "Editar Oficina" : "Nueva Oficina"}
+              </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="company_id" className="text-right">Empresa</Label>
-                <Select required onValueChange={(value) => handleSelectChange('company_id', value)} value={form.company_id}>
-                  <SelectTrigger className="col-span-3"><SelectValue placeholder="Selecciona una empresa" /></SelectTrigger>
-                  <SelectContent>{companies.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}</SelectContent>
+                <Label htmlFor="company_id" className="text-right">
+                  Empresa
+                </Label>
+                <Select
+                  required
+                  onValueChange={(value) =>
+                    handleSelectChange("company_id", value)
+                  }
+                  value={form.company_id}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecciona una empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.company_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="office_name" className="text-right">Nombre</Label>
-                <Input id="office_name" name="office_name" value={form.office_name} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="office_name" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="office_name"
+                  name="office_name"
+                  value={form.office_name}
+                  onChange={handleFormChange}
+                  required
+                  className="col-span-3"
+                />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="office_status" className="text-right">Status</Label>
-                <Select onValueChange={(value) => handleSelectChange('office_status', Number(value))} value={String(form.office_status)}>
-                  <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                <Label htmlFor="office_status" className="text-right">
+                  Status
+                </Label>
+                <Select
+                  onValueChange={(value) =>
+                    handleSelectChange("office_status", Number(value))
+                  }
+                  value={String(form.office_status)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">Activo</SelectItem>
                     <SelectItem value="0">Inactivo</SelectItem>
@@ -306,10 +432,18 @@ export default function OfficesPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancelar
+              </Button>
               <Button type="submit" disabled={actionLoading}>
-                {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? 'Guardar Cambios' : 'Crear Oficina'}
+                {actionLoading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isEdit ? "Guardar Cambios" : "Crear Oficina"}
               </Button>
             </DialogFooter>
           </form>
@@ -317,20 +451,38 @@ export default function OfficesPage() {
       </Dialog>
 
       {/* Modal Confirmar Eliminar */}
-      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+      <AlertDialog
+        open={isConfirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro de que quieres eliminar esta oficina?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer. Esto eliminará permanentemente la oficina de los servidores.</AlertDialogDescription>
+            <AlertDialogTitle>
+              ¿Estás seguro de que quieres eliminar esta oficina?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              la oficina de los servidores.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteId(null)}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={actionLoading} className="bg-destructive hover:bg-destructive/90">
-              {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Eliminar'}
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={actionLoading}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {actionLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Eliminar"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
   );
-} 
+}

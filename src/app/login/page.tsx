@@ -1,22 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
-
-import { Button } from '@/registry/new-york-v4/ui/button';
-import { Input } from '@/registry/new-york-v4/ui/input';
-import { Label } from '@/registry/new-york-v4/ui/label';
-import { Alert, AlertDescription } from '@/registry/new-york-v4/ui/alert';
-import { toast } from 'sonner';
-import Image from 'next/image';
+import { Alert, AlertDescription } from "@/registry/new-york-v4/ui/alert";
+import { Button } from "@/registry/new-york-v4/ui/button";
+import { Input } from "@/registry/new-york-v4/ui/input";
+import { Label } from "@/registry/new-york-v4/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email('Por favor ingresa un email válido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  email: z.string().email("Por favor ingresa un email válido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -24,7 +23,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const {
@@ -37,28 +36,32 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3022/api/v1/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (response.ok) {
-        toast.success('Inicio de sesión exitoso');
-        router.push('/dashboard');
+        const responseData = await response.json();
+        // Set token in client-side cookie (expires in 1 day)
+        document.cookie = `token=${responseData.token}; path=/; max-age=${60 * 60 * 24}; samesite=lax${process.env.NODE_ENV === "production" ? "; secure" : ""}`;
+        toast.success("Inicio de sesión exitoso");
+        router.push("/dashboard");
+        //redirect("/dashboard");
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Error al iniciar sesión');
-        toast.error('Error al iniciar sesión');
+        setError(errorData.message || "Error al iniciar sesión");
+        toast.error("Error al iniciar sesión");
       }
     } catch (error) {
-      setError('Error de conexión. Por favor intenta de nuevo.');
-      toast.error('Error de conexión');
+      setError("Error de conexión. Por favor intenta de nuevo.");
+      toast.error("Error de conexión");
     } finally {
       setIsLoading(false);
     }
@@ -84,12 +87,32 @@ export default function LoginPage() {
           <div className="flex-1 flex flex-col justify-center items-center gap-8">
             {/* <Image src="/images/people.png" alt="Personas" width={320} height={320} className="mb-8" /> */}
             <div className="flex flex-wrap justify-center gap-8 ">
-              <Image src="/images/playcity.png" alt="PlayCity" width={220} height={124} />
-              <Image src="/images/banorte.png" alt="Banorte" width={220} height={124} />
+              <Image
+                src="/images/playcity.png"
+                alt="PlayCity"
+                width={220}
+                height={124}
+              />
+              <Image
+                src="/images/banorte.png"
+                alt="Banorte"
+                width={220}
+                height={124}
+              />
             </div>
             <div className="flex flex-wrap justify-center gap-8 ">
-              <Image src="/images/intermex.png" alt="Intermex" width={220} height={124} />
-              <Image src="/images/televisa.png" alt="Televisa" width={220} height={124} />
+              <Image
+                src="/images/intermex.png"
+                alt="Intermex"
+                width={220}
+                height={124}
+              />
+              <Image
+                src="/images/televisa.png"
+                alt="Televisa"
+                width={220}
+                height={124}
+              />
             </div>
           </div>
         </div>
@@ -99,11 +122,22 @@ export default function LoginPage() {
         <div className="w-full max-w-md mx-auto">
           {/* Logo principal */}
           <div className="flex justify-center mb-8">
-            <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={220} height={75} />
+            <Image
+              src="/images/ollamani-logo.png"
+              alt="Ollamani Grupo"
+              width={220}
+              height={75}
+            />
           </div>
-          <h1 className="text-center text-[#18306a] text-lg font-semibold mb-2">Portal Incidencias</h1>
-          <h2 className="text-center text-[#18306a] text-md font-semibold mb-2">Gesti&oacute;n de Cultura y Desarrollo</h2>
-          <h3 className="text-center text-gray-700 text-base font-medium mb-6">Inicio de Sesión</h3>
+          <h1 className="text-center text-[#18306a] text-lg font-semibold mb-2">
+            Portal Incidencias
+          </h1>
+          <h2 className="text-center text-[#18306a] text-md font-semibold mb-2">
+            Gesti&oacute;n de Cultura y Desarrollo
+          </h2>
+          <h3 className="text-center text-gray-700 text-base font-medium mb-6">
+            Inicio de Sesión
+          </h3>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {error && (
               <Alert variant="destructive">
@@ -111,27 +145,39 @@ export default function LoginPage() {
               </Alert>
             )}
             <div>
-              <Label htmlFor="email" className="text-sm font-medium text-[#18306a]">Usuario *</Label>
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-[#18306a]"
+              >
+                Usuario *
+              </Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="tu@email.com"
-                {...register('email')}
-                className={`mt-1 h-11 text-base ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-[#18306a] focus:border-[#18306a]'} focus:ring-[#18306a]`}
+                {...register("email")}
+                className={`mt-1 h-11 text-base ${errors.email ? "border-red-500 focus:border-red-500" : "border-[#18306a] focus:border-[#18306a]"} focus:ring-[#18306a]`}
               />
               {errors.email && (
-                <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.email.message}
+                </p>
               )}
             </div>
             <div>
-              <Label htmlFor="password" className="text-sm font-medium text-[#18306a]">Contraseña *</Label>
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-[#18306a]"
+              >
+                Contraseña *
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  {...register('password')}
-                  className={`mt-1 h-11 text-base pr-12 ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-[#18306a] focus:border-[#18306a]'} focus:ring-[#18306a]`}
+                  {...register("password")}
+                  className={`mt-1 h-11 text-base pr-12 ${errors.password ? "border-red-500 focus:border-red-500" : "border-[#18306a] focus:border-[#18306a]"} focus:ring-[#18306a]`}
                 />
                 <Button
                   type="button"
@@ -149,7 +195,9 @@ export default function LoginPage() {
                 </Button>
               </div>
               {errors.password && (
-                <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
             <Button
@@ -163,7 +211,7 @@ export default function LoginPage() {
                   Accediendo...
                 </>
               ) : (
-                'Acceder'
+                "Acceder"
               )}
             </Button>
           </form>
@@ -171,4 +219,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}

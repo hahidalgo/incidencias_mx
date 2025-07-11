@@ -1,25 +1,8 @@
-'use client';
-import React, { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+"use client";
+import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,16 +12,34 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import getCookie from "@/lib/getToken";
 
 interface Incident {
   id: string;
@@ -53,7 +54,11 @@ interface IncidentForm {
   incident_status: number;
 }
 
-const initialForm: IncidentForm = { incident_code: '', incident_name: '', incident_status: 1 };
+const initialForm: IncidentForm = {
+  incident_code: "",
+  incident_name: "",
+  incident_status: 1,
+};
 const PAGE_SIZE = 7;
 
 export default function IncidentsPage() {
@@ -61,8 +66,8 @@ export default function IncidentsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -79,7 +84,7 @@ export default function IncidentsPage() {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
-    
+
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -91,10 +96,19 @@ export default function IncidentsPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(`/api/incidents?${params.toString()}`);
-      if (!res.ok) throw new Error('No se pudieron obtener las incidencias.');
+      const res = await fetch(
+        `http://localhost:3022/api/v1/incidents?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("token")}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("No se pudieron obtener las incidencias.");
       const data = await res.json();
-      setIncidents(data.incidents || []);
+      setIncidents(data.data || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
     } catch (e: any) {
@@ -136,7 +150,10 @@ export default function IncidentsPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name: keyof IncidentForm, value: string | number) => {
+  const handleSelectChange = (
+    name: keyof IncidentForm,
+    value: string | number
+  ) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -144,19 +161,25 @@ export default function IncidentsPage() {
     e.preventDefault();
     setActionLoading(true);
     try {
-      const method = isEdit ? 'PUT' : 'POST';
+      const method = isEdit ? "PUT" : "POST";
       const body = isEdit ? { ...form, id: currentIncident?.id } : form;
 
-      const res = await fetch('/api/incidents', {
+      const res = await fetch("http://localhost:3022/api/v1/incidents", {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
         body: JSON.stringify(body),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al guardar la incidencia.');
+      if (!res.ok)
+        throw new Error(data.message || "Error al guardar la incidencia.");
 
-      toast.success(`Incidencia ${isEdit ? 'actualizada' : 'creada'} con éxito.`);
+      toast.success(
+        `Incidencia ${isEdit ? "actualizada" : "creada"} con éxito.`
+      );
       setIsModalOpen(false);
       fetchIncidents();
     } catch (e: any) {
@@ -170,16 +193,20 @@ export default function IncidentsPage() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch('/api/incidents', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:3022/api/v1/incidents", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
         body: JSON.stringify({ id: deleteId }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al eliminar la incidencia.');
+      if (!res.ok)
+        throw new Error(data.message || "Error al eliminar la incidencia.");
 
-      toast.success('Incidencia eliminada con éxito.');
+      toast.success("Incidencia eliminada con éxito.");
       setDeleteId(null);
       setConfirmDeleteOpen(false);
       fetchIncidents();
@@ -195,38 +222,80 @@ export default function IncidentsPage() {
       <div className="flex items-center">
         <h2 className="text-3xl font-bold">Incidencias</h2>
         <div className="ml-auto flex items-center gap-2">
-          <Input placeholder="Buscar incidencia..." value={search} onChange={handleSearch} className="w-64" />
-          <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Nueva Incidencia</Button>
+          <Input
+            placeholder="Buscar incidencia..."
+            value={search}
+            onChange={handleSearch}
+            className="w-64"
+          />
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> Nueva Incidencia
+          </Button>
         </div>
       </div>
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow className='bg-blue-950 text-white hover:bg-blue-800'>
+            <TableRow className="bg-blue-950 text-white hover:bg-blue-800">
               <TableHead className="text-white w-32">Código</TableHead>
-              <TableHead className='text-white'>Nombre</TableHead>
+              <TableHead className="text-white">Nombre</TableHead>
               <TableHead className="text-white w-32">Status</TableHead>
-              <TableHead className="text-white w-32 text-right">Acciones</TableHead>
+              <TableHead className="text-white w-32 text-right">
+                Acciones
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center h-24">Cargando...</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={4} className="text-center h-24">
+                  Cargando...
+                </TableCell>
+              </TableRow>
             ) : incidents.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center h-24">No se encontraron incidencias.</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={4} className="text-center h-24">
+                  No se encontraron incidencias.
+                </TableCell>
+              </TableRow>
             ) : (
               incidents.map((incident) => (
                 <TableRow key={incident.id}>
-                  <TableCell className="font-mono text-sm">{incident.incident_code}</TableCell>
-                  <TableCell className="font-medium">{incident.incident_name}</TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {incident.incident_code}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {incident.incident_name}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={incident.incident_status === 1 ? 'default' : 'destructive'}>
-                      {incident.incident_status === 1 ? 'Activo' : 'Inactivo'}
+                    <Badge
+                      variant={
+                        incident.incident_status === 1
+                          ? "default"
+                          : "destructive"
+                      }
+                    >
+                      {incident.incident_status === 1 ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(incident)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { setDeleteId(incident.id); setConfirmDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEdit(incident)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeleteId(incident.id);
+                        setConfirmDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -237,54 +306,130 @@ export default function IncidentsPage() {
       <div className="flex justify-between items-center text-sm text-muted-foreground">
         <div>Total: {total} incidencias</div>
         <div className="flex items-center gap-2">
-          <span>Página {page} de {totalPages}</span>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Anterior</Button>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Siguiente</Button>
+          <span>
+            Página {page} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Siguiente
+          </Button>
         </div>
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit}>
-            <DialogHeader><DialogTitle>{isEdit ? 'Editar Incidencia' : 'Nueva Incidencia'}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>
+                {isEdit ? "Editar Incidencia" : "Nueva Incidencia"}
+              </DialogTitle>
+            </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="incident_code" className="text-right">Código</Label>
-                <Input id="incident_code" name="incident_code" value={form.incident_code} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="incident_code" className="text-right">
+                  Código
+                </Label>
+                <Input
+                  id="incident_code"
+                  name="incident_code"
+                  value={form.incident_code}
+                  onChange={handleFormChange}
+                  required
+                  className="col-span-3"
+                />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="incident_name" className="text-right">Nombre</Label>
-                <Input id="incident_name" name="incident_name" value={form.incident_name} onChange={handleFormChange} required className="col-span-3" />
+                <Label htmlFor="incident_name" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="incident_name"
+                  name="incident_name"
+                  value={form.incident_name}
+                  onChange={handleFormChange}
+                  required
+                  className="col-span-3"
+                />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="incident_status" className="text-right">Status</Label>
-                <Select onValueChange={(value) => handleSelectChange('incident_status', Number(value))} value={String(form.incident_status)}>
-                  <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="1">Activo</SelectItem><SelectItem value="0">Inactivo</SelectItem></SelectContent>
+                <Label htmlFor="incident_status" className="text-right">
+                  Status
+                </Label>
+                <Select
+                  onValueChange={(value) =>
+                    handleSelectChange("incident_status", Number(value))
+                  }
+                  value={String(form.incident_status)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Activo</SelectItem>
+                    <SelectItem value="0">Inactivo</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancelar
+              </Button>
               <Button type="submit" disabled={actionLoading}>
-                {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? 'Guardar Cambios' : 'Crear Incidencia'}
+                {actionLoading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isEdit ? "Guardar Cambios" : "Crear Incidencia"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+      <AlertDialog
+        open={isConfirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro de que quieres eliminar esta incidencia?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer. Esto eliminará permanentemente la incidencia.</AlertDialogDescription>
+            <AlertDialogTitle>
+              ¿Estás seguro de que quieres eliminar esta incidencia?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              la incidencia.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteId(null)}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={actionLoading} className="bg-destructive hover:bg-destructive/90">
-              {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Eliminar'}
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={actionLoading}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {actionLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Eliminar"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
