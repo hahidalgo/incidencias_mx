@@ -36,7 +36,7 @@ const NavigationBar = () => {
     };
 
     return (
-        <header className="w-full flex items-center justify-between px-6 py-2 bg-white shadow-sm">
+        <header className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-sm">
             <div className="flex items-left gap-6">
                 <Link href="/dashboard" className="flex items-center">
                     <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={177} height={60} />
@@ -65,6 +65,9 @@ const NavigationBar = () => {
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
                                         <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded">Oficinas</Link>
+                                    </NavigationMenuLink>
+                                    <NavigationMenuLink asChild>
+                                        <Link href="/periods" className="px-4 py-2 hover:bg-accent rounded">Periodos de Pago</Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
                                         <Link href="/incidents" className="px-4 py-2 hover:bg-accent rounded">Incidentes</Link>
