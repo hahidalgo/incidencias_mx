@@ -68,8 +68,10 @@ export async function POST(request: NextRequest) {
         employeeCode: employee_code,
         employeeName: employee_name,
         employeeType: employee_type,
+        employeeSundayBonus: 0, // Valor por defecto
         employeeStatus: employee_status
-      }
+      },
+      include: { office: { select: { officeName: true } } }
     });
     
 return NextResponse.json(employee);
@@ -96,8 +98,10 @@ export async function PUT(request: NextRequest) {
         employeeCode: employee_code,
         employeeName: employee_name,
         employeeType: employee_type,
+        employeeSundayBonus: 0, // Valor por defecto
         employeeStatus: employee_status
-      }
+      },
+      include: { office: { select: { officeName: true } } }
     });
     
 return NextResponse.json(employee);

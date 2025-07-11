@@ -46,12 +46,13 @@ interface Employee {
   employee_code: number;
   employee_name: string;
   employee_type: 'SIND' | 'CONF';
-  employee_status: number;
+  employee_status: string
+  office_name?: string | null; // Campo opcional para el nombre de la oficina
 }
 
 interface Office {
   id: string;
-  office_name: string;
+  officeName: string;
 }
 
 interface EmployeeForm {
@@ -59,10 +60,10 @@ interface EmployeeForm {
   employee_code: string; // Usamos string para el input, convertimos al enviar
   employee_name: string;
   employee_type: 'SIND' | 'CONF';
-  employee_status: number;
+  employee_status: string
 }
 
-const initialForm: EmployeeForm = { office_id: '', employee_code: '', employee_name: '', employee_type: 'SIND', employee_status: 1 };
+const initialForm: EmployeeForm = { office_id: '', employee_code: '', employee_name: '', employee_type: 'SIND', employee_status: 'ACTIVE' };
 const PAGE_SIZE = 7;
 
 export default function EmployeesPage() {
@@ -106,7 +107,18 @@ export default function EmployeesPage() {
       const res = await fetch(`/api/employees?${params.toString()}`);
       if (!res.ok) throw new Error('No se pudieron obtener los empleados.');
       const data = await res.json();
-      setEmployees(data.employees || []);
+      // Mapear los campos del backend (camelCase) a los del frontend (snake_case)
+      setEmployees(
+        (data.employees || []).map((emp: any) => ({
+          id: emp.id,
+          office_id: emp.officeId,
+          employee_code: emp.employeeCode,
+          employee_name: emp.employeeName,
+          employee_type: emp.employeeType,
+          employee_status: emp.employeeStatus,
+          office_name: emp.office?.officeName || null, // Nuevo campo opcional
+        }))
+      );
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
     } catch (e: any) {
@@ -127,8 +139,10 @@ export default function EmployeesPage() {
         if (!res.ok) throw new Error('No se pudieron obtener las oficinas.');
         const data = await res.json();
         const officeData = data.offices || [];
+        
         setOffices(officeData);
-        setOfficeMap(new Map(officeData.map((o: Office) => [o.id, o.office_name])));
+        setOfficeMap(new Map(officeData.map((o: Office) => [o.id, o.officeName])));
+        console.log(officeData);
       } catch (e: any) {
         toast.error(e.message);
       }
@@ -175,11 +189,23 @@ export default function EmployeesPage() {
     setActionLoading(true);
     try {
       const method = isEdit ? 'PUT' : 'POST';
-      const body = {
-        ...form,
-        id: isEdit ? currentEmployee?.id : undefined,
-        employee_code: Number(form.employee_code), // Convertir a número
-      };
+      // Usar camelCase para el body
+      const body = isEdit
+        ? {
+            id: currentEmployee?.id,
+            office_id: form.office_id,
+            employee_code: Number(form.employee_code),
+            employee_name: form.employee_name,
+            employee_type: form.employee_type,
+            employee_status: form.employee_status,
+          }
+        : {
+            office_id: form.office_id,
+            employee_code: Number(form.employee_code),
+            employee_name: form.employee_name,
+            employee_type: form.employee_type,
+            employee_status: form.employee_status,
+          };
 
       const res = await fetch('/api/employees', {
         method,
@@ -257,15 +283,15 @@ export default function EmployeesPage() {
                 <TableRow key={employee.id}>
                   <TableCell className="font-mono text-sm">{employee.employee_code}</TableCell>
                   <TableCell className="font-medium">{employee.employee_name}</TableCell>
-                  <TableCell>{officeMap.get(employee.office_id) || 'N/A'}</TableCell>
+                  <TableCell>{employee.office_name ?? officeMap.get(employee.office_id) ?? 'N/A'}</TableCell>
                   <TableCell>
                     <Badge variant={employee.employee_type === 'SIND' ? 'outline' : 'secondary'}>
                       {employee.employee_type}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={employee.employee_status === 1 ? 'default' : 'destructive'}>
-                      {employee.employee_status === 1 ? 'Activo' : 'Inactivo'}
+                    <Badge variant={employee.employee_status === 'ACTIVE' ? 'default' : 'destructive'}>
+                      {employee.employee_status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -305,7 +331,7 @@ export default function EmployeesPage() {
                 <Label htmlFor="office_id" className="text-right">Oficina</Label>
                 <Select required onValueChange={(value) => handleSelectChange('office_id', value)} value={form.office_id}>
                   <SelectTrigger className="col-span-3"><SelectValue placeholder="Selecciona una oficina" /></SelectTrigger>
-                  <SelectContent>{offices.map(o => <SelectItem key={o.id} value={o.id}>{o.office_name}</SelectItem>)}</SelectContent>
+                  <SelectContent>{offices.map(o => <SelectItem key={o.id} value={o.id}>{o.officeName}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -319,7 +345,7 @@ export default function EmployeesPage() {
                 <Label htmlFor="employee_status" className="text-right">Status</Label>
                 <Select onValueChange={(value) => handleSelectChange('employee_status', Number(value))} value={String(form.employee_status)}>
                   <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="1">Activo</SelectItem><SelectItem value="0">Inactivo</SelectItem></SelectContent>
+                  <SelectContent><SelectItem value="ACTIVE">Activo</SelectItem><SelectItem value="INACTIVE">Inactivo</SelectItem></SelectContent>
                 </Select>
               </div>
             </div>
