@@ -4,10 +4,23 @@ node_modules
 .vscode
 .DS_Store
 
+# local env files
 .env
-# .env.local
+.env.local
 .env.development
 .env.test
 .env.production
+.env.*.local
+.env.*.development
+.env.*.test
+.env.*.production
+.env.*
+
+/out
+
+# misc
+.DS_Store
+*.log
+
 
 /src/generated/prisma
