@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BellIcon, HouseIcon, PowerIcon, SettingsIcon  } from 'lucide-react';
+import { BellIcon, HouseIcon, PowerIcon, SettingsIcon, Building2Icon, UserIcon, CalendarIcon, UsersRound, FactoryIcon, AlertCircleIcon} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -22,6 +22,7 @@ const NavigationBar = () => {
             const res = await fetch('/api/auth/me');
             if (res.ok) {
                 const data = await res.json();
+                console.log(data);
                 setUser(data.user);
             } else {
                 setUser(null);
@@ -48,10 +49,10 @@ const NavigationBar = () => {
                 </span>
             </div>
             <div className="flex items-center gap-6 text-gray-400">
-                <span className="text-gray-500 text-sm">Hola <span className="font-bold text-[#0E2655]">{user ? user.name : '...'}</span></span>
+                <span className="text-gray-500 text-sm">Hola <span className="font-bold text-[#0E2655]">{user ? user.userName : '...'}</span></span>
                 <Link href="/dashboard" className="flex items-center"><HouseIcon className="w-5 h-5" /></Link>
                 
-                <BellIcon className="w-5 h-5" />
+                
                 <NavigationMenu>
                     <NavigationMenuList>
                         <NavigationMenuItem>
@@ -59,30 +60,50 @@ const NavigationBar = () => {
                                 <SettingsIcon className="w-5 h-5" />
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
-                                <div className="flex flex-col min-w-[160px]">
-                                <NavigationMenuLink asChild>
-                                        <Link href="/companies" className="px-4 py-2 hover:bg-accent rounded">Compañías</Link>
+                                <div className="flex flex-col min-w-[260px] max-h-[400px] max-w-full overflow-y-auto overflow-x-hidden">
+                                    <NavigationMenuLink asChild>
+                                        <Link href="/companies" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                            <Building2Icon className="w-5 h-5" />
+                                            Compañías
+                                        </Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
-                                        <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded">Oficinas</Link>
+                                        <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                            <FactoryIcon className="w-5 h-5" />
+                                            Oficinas
+                                        </Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
-                                        <Link href="/periods" className="px-4 py-2 hover:bg-accent rounded">Periodos de Pago</Link>
+                                        <Link href="/periods" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                            <CalendarIcon className="w-5 h-5" />
+                                            Periodos de Pago
+                                        </Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
-                                        <Link href="/incidents" className="px-4 py-2 hover:bg-accent rounded">Incidentes</Link>
+                                        <Link href="/incidents" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                            <AlertCircleIcon className="w-5 h-5" />
+                                            Incidentes
+                                        </Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
-                                        <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded">Empleados</Link>
+                                        <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                            <UsersRound className="w-5 h-5" />
+                                            Empleados
+                                        </Link>
                                     </NavigationMenuLink>
                                     <NavigationMenuLink asChild>
-                                        <Link href="/users" className="px-4 py-2 hover:bg-accent rounded">Usuarios</Link>
+                                        <Link href="/users" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                            <UserIcon className="w-5 h-5" />
+                                            Usuarios
+                                        </Link>
                                     </NavigationMenuLink>
                                 </div>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
+
+                <BellIcon className="w-5 h-5" />
                 <PowerIcon className="w-5 h-5 cursor-pointer" onClick={handleLogout} aria-label="Cerrar sesión" />
             </div>
         </header>

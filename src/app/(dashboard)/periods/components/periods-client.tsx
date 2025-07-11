@@ -181,8 +181,8 @@ export const PeriodsClient = () => {
             </Dialog>
             <div className="flex items-center">
                 <Heading
-                    title={`Periodos (${total})`}
-                    description="Gestiona los periodos de incidencias"
+                    title="Periodos"
+                    description="Gestiona los periodos de Pagos"
                 />
                 <div className="ml-auto flex items-center gap-2">
                     <Input
