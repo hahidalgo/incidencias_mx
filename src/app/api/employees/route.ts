@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
     const whereClause = search
       ? {
           OR: [
-            { employeeName: { contains: search, mode: 'insensitive' } },
-            { employeeType: { contains: search, mode: 'insensitive' } },
+            { employeeName: { contains: search, mode: 'insensitive' as const } },
+            { employeeType: { contains: search, mode: 'insensitive' as const } },
           ],
         }
       : {};

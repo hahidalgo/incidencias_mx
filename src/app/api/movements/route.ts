@@ -63,13 +63,13 @@ export async function GET(request: NextRequest) {
             ? {
                 OR: [
                     {
-                        employee: { // Búsqueda en el nombre del empleado relacionado
-                            employeeName: { contains: search, mode: "insensitive" },
+                        employee: {
+                            is: { employeeName: { contains: search, mode: 'insensitive' as const } }
                         }
                     },
                     {
-                        incident: { // Búsqueda en el nombre de la incidencia relacionada
-                            incidentName: { contains: search, mode: "insensitive" },
+                        incident: {
+                            is: { incidentName: { contains: search, mode: 'insensitive' as const } }
                         }
                     },
                 ],

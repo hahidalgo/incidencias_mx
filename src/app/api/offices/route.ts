@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   const where = search
     ? {
-        officeName: { contains: search, mode: 'insensitive' },
+        officeName: { contains: search, mode: 'insensitive' as const },
       }
     : {};
 

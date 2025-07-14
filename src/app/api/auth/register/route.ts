@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica si el usuario ya existe
-    const existing = await prisma.users.findFirst({
-      where: { user_email: user_email }
+    const existing = await prisma.user.findFirst({
+      where: { userEmail: user_email }
     });
     if (existing) {
       return NextResponse.json({ message: 'El usuario ya existe' }, { status: 409 });
@@ -33,15 +33,14 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(user_password, 10);
 
     // Crea el usuario
-    const user = await prisma.users.create({
+    const user = await prisma.user.create({
       data: {
-        company_id,
-        office_id,
-        user_name,
-        user_email,
-        user_password: hashedPassword,
-        user_status,
-        user_rol
+        companyId: company_id,
+        userName: user_name,
+        userEmail: user_email,
+        userPassword: hashedPassword,
+        userStatus: user_status,
+        userRol: user_rol
       }
     });
 
@@ -49,12 +48,11 @@ export async function POST(request: NextRequest) {
       message: 'Usuario creado exitosamente',
       user: {
         id: user.id,
-        company_id: user.company_id,
-        office_id: user.office_id,
-        user_name: user.user_name,
-        user_email: user.user_email,
-        user_status: user.user_status,
-        user_rol: user.user_rol
+        company_id: user.companyId,
+        user_name: user.userName,
+        user_email: user.userEmail,
+        user_status: user.userStatus,
+        user_rol: user.userRol
       }
     });
   } catch (error) {

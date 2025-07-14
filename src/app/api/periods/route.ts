@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
 
     const where = search
-        ? { periodName: { contains: search, mode: 'insensitive' } }
+        ? { periodName: { contains: search, mode: 'insensitive' as const } }
         : {};
 
     try {
