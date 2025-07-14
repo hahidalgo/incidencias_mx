@@ -72,7 +72,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                 employeeId: initialData.employee.id,
                 incidentId: initialData.incident.id,
                 incidenceDate: new Date(initialData.incidence_date),
-                incidenceObservation: initialData.incidence_observation || '',
+                incidenceObservation: initialData.incidenceObservation || '',
             });
         } else {
             form.reset({

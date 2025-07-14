@@ -28,6 +28,7 @@ export interface Movement {
         incident_name: string;
     };
     incidence_date: string;
+    incidenceObservation: string;
 }
 
 const PAGE_SIZE = 10;

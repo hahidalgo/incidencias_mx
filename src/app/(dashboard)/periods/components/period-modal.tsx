@@ -67,7 +67,7 @@ export const PeriodModal: React.FC<PeriodModalProps> = ({
                 periodName: initialData.periodName,
                 periodStart: new Date(initialData.periodStart),
                 periodEnd: new Date(initialData.periodEnd),
-                periodStatus: initialData.periodStatus,
+                periodStatus: initialData.periodStatus as "ACTIVE" | "INACTIVE",
             });
         } else {
             form.reset({
