@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
                 periodStatus: period_status,
             },
         });
+
         return NextResponse.json(period, { status: 201 });
     } catch (error) {
         return NextResponse.json({ message: 'Error al crear periodo' }, { status: 500 });
@@ -74,6 +75,7 @@ export async function PUT(request: NextRequest) {
                 periodStatus: period_status,
             },
         });
+
         return NextResponse.json(period);
     } catch (error) {
         return NextResponse.json({ message: 'Error al editar periodo' }, { status: 500 });
@@ -88,6 +90,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
         }
         await prisma.period.delete({ where: { id } });
+        
         return NextResponse.json({ message: 'Periodo eliminado correctamente' });
     } catch (error) {
         return NextResponse.json({ message: 'Error al eliminar periodo' }, { status: 500 });
