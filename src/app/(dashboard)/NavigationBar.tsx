@@ -15,6 +15,7 @@ import {
 
 const NavigationBar = () => {
     const [user, setUser] = useState<any>(null);
+    const [currentPeriod, setCurrentPeriod] = useState<any>(null); // Nuevo estado
     const router = useRouter();
 
     useEffect(() => {
@@ -31,6 +32,19 @@ const NavigationBar = () => {
         fetchUser();
     }, []);
 
+    useEffect(() => {
+        const fetchPeriod = async () => {
+            const res = await fetch('/api/periods/current');
+            if (res.ok) {
+                const data = await res.json();
+                setCurrentPeriod(data);
+            } else {
+                setCurrentPeriod(null);
+            }
+        };
+        fetchPeriod();
+    }, []);
+
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' });
         router.push('/login');
@@ -45,7 +59,15 @@ const NavigationBar = () => {
                 <span className="text-lg text-[#0E2655] font-medium py-4 px-3">
                     Portal de <span className="font-bold text-[#0E2655]">Recursos Humanos</span>
                     <span className="text-gray-400">  |  </span>
-                    Semana <span className="text-[#0E2655] font-semibold">28</span>
+                    {currentPeriod ? (
+                        <span className="inline-flex items-center gap-1">
+                            <CalendarIcon className="w-4 h-4 inline-block text-blue-900" />
+                            <span className="text-[#0E2655] font-semibold">{currentPeriod.periodName}</span>
+                            <span className="text-gray-400 text-xs ml-2">({new Date(currentPeriod.periodStart).toLocaleDateString()} - {new Date(currentPeriod.periodEnd).toLocaleDateString()})</span>
+                        </span>
+                    ) : (
+                        <span className="text-gray-400">Sin periodo actual</span>
+                    )}
                 </span>
             </div>
             <div className="flex items-center gap-6 text-gray-400">
