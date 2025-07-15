@@ -29,12 +29,9 @@ export const getColumns = (
             header: "Tipo",
         },
         {
-            accessorKey: "incidentCode",
-            header: "Código Incidencia",
-        },
-        {
-            accessorKey: "incidentName",
+            accessorKey: "incidentFull",
             header: "Incidencia",
+            cell: ({ row }) => `${row.original.incidentCode} - ${row.original.incidentName}`,
         },
         {
             accessorKey: "date",

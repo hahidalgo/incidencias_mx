@@ -66,17 +66,17 @@ export const MovimientosClient = () => {
             const { movements, total, totalPages } = await res.json();
 
             setMovements(movements);
-
-            const formattedMovements: MovementColumn[] = movements.map((item: Movement) => ({
+            console.log(movements);
+            const formattedMovements: MovementColumn[] = movements.map((item: any) => ({
                 id: item.id,
-                employeeCode: item.employee.employee_code,
-                employeeType: item.employee.employee_type,
-                employeeName: item.employee.employee_name,
-                incidentCode: item.incident.incident_code,
-                incidentName: item.incident.incident_name,
-                date: format(new Date(item.incidence_date), "d 'de' MMMM 'de' yyyy", {
-                    locale: es,
-                }),
+                employeeCode: item.employee.employeeCode ?? item.employee.employee_code,
+                employeeType: item.employee.employeeType ?? item.employee.employee_type,
+                employeeName: item.employee.employeeName ?? item.employee.employee_name,
+                incidentCode: item.incident.incidentCode ?? item.incident.incident_code,
+                incidentName: item.incident.incidentName ?? item.incident.incident_name,
+                date: item.incidence_date
+                    ? (() => { try { return format(new Date(item.incidence_date), "dd/MM/yyyy"); } catch { return 'Sin fecha'; } })()
+                    : 'Sin fecha',
             }));
 
             setFormattedData(formattedMovements);

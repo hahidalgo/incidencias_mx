@@ -17,12 +17,15 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Movement } from "./movimientos-client";
+import { Alert } from '@/components/ui/alert';
 
 // Tipos para los datos que se cargarán en los selectores
 interface Employee {
     id: string;
     employee_name: string;
     employee_code: number;
+    employee_type: string;
+    employee_sunday_bonus: number;
 }
 
 interface Incident {
@@ -58,6 +61,8 @@ export const MovementModal: React.FC<MovementModalProps> = ({
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
     const [incidentPopoverOpen, setIncidentPopoverOpen] = useState(false);
+    const [currentPeriod, setCurrentPeriod] = useState<any>(null); // Estado para el periodo actual
+    const [alertMessage, setAlertMessage] = useState<string | null>(null); // Estado para el mensaje de alerta
 
     const title = initialData ? "Editar Movimiento" : "Crear Movimiento";
     const action = initialData ? "Guardar cambios" : "Crear";
@@ -98,8 +103,22 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                     const empData = await empRes.json();
                     const incData = await incRes.json();
 
-                    setEmployees(empData.employees || []);
-                    setIncidents(incData.incidents || []);
+                    setEmployees(
+                        (empData.employees || []).map((emp: any) => ({
+                            id: emp.id,
+                            employee_name: emp.employeeName,
+                            employee_code: emp.employeeCode,
+                            employee_type: emp.employeeType,
+                            employee_sunday_bonus: emp.employeeSundayBonus,
+                        }))
+                    );
+                    setIncidents(
+                        (incData.incidents || []).map((inc: any) => ({
+                            id: inc.id,
+                            incident_name: inc.incidentName,
+                            incident_code: inc.incidentCode,
+                        }))
+                    );
                 } catch (error: any) {
                     toast.error(error.message);
                 }
@@ -108,20 +127,57 @@ export const MovementModal: React.FC<MovementModalProps> = ({
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if (isOpen) {
+            // Obtener el periodo actual al abrir el modal
+            const fetchPeriod = async () => {
+                try {
+                    const res = await fetch('/api/periods/current');
+                    if (res.ok) {
+                        const data = await res.json();
+                        setCurrentPeriod(data);
+                    } else {
+                        setCurrentPeriod(null);
+                    }
+                } catch {
+                    setCurrentPeriod(null);
+                }
+            };
+            fetchPeriod();
+        }
+    }, [isOpen]);
+
     const onSubmit = async (values: MovementFormValues) => {
         setLoading(true);
+        setAlertMessage(null);
         try {
-            // Buscar el código del empleado y de la incidencia a partir del ID seleccionado
+            // Buscar el empleado y la incidencia seleccionados
             const selectedEmployee = employees.find(e => e.id === values.employeeId);
             const selectedIncident = incidents.find(i => i.id === values.incidentId);
             if (!selectedEmployee || !selectedIncident) {
                 throw new Error('Empleado o incidencia no válidos.');
             }
+            // Validación especial
+            if (
+                selectedEmployee.employee_type === 'CONF' &&
+                selectedEmployee.employee_sunday_bonus !== 1 &&
+                selectedIncident.incident_code === '008'
+            ) {
+                setAlertMessage('No es posible asignar la incidencia 008 a un trabajador de tipo CONF con bono dominical diferente de 1.');
+                setLoading(false);
+                return;
+            }
+            // Obtener el periodo actual
+            const periodRes = await fetch('/api/periods/current');
+            if (!periodRes.ok) throw new Error('No se pudo obtener el periodo actual');
+            const period = await periodRes.json();
+
             const body = {
-                employeeCode: selectedEmployee.employee_code,
-                incidentCode: selectedIncident.incident_code,
-                incidenceDate: values.incidenceDate,
-                incidenceObservation: values.incidenceObservation || '',
+                period_id: period.id,
+                employee_id: values.employeeId,
+                incident_id: values.incidentId,
+                incidence_date: values.incidenceDate,
+                incidence_observation: values.incidenceObservation || '',
             };
             const url = initialData ? `/api/movements?id=${initialData.id}` : '/api/movements';
             const method = initialData ? 'PUT' : 'POST';
@@ -157,6 +213,18 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
+                {/* Mostrar periodo actual */}
+                {currentPeriod && (
+                    <div className="mb-2 p-2 bg-blue-50 rounded text-blue-900 text-sm">
+                        <strong>Periodo actual:</strong> {currentPeriod.periodName} <span className="text-gray-500">({new Date(currentPeriod.periodStart).toLocaleDateString()} - {new Date(currentPeriod.periodEnd).toLocaleDateString()})</span>
+                    </div>
+                )}
+                {/* Mostrar alerta si aplica */}
+                {alertMessage && (
+                    <Alert variant="destructive" className="mb-2">
+                        {alertMessage}
+                    </Alert>
+                )}
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <FormField
