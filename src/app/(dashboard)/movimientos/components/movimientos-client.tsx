@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { MovementModal } from "./movement-modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/registry/new-york-v4/ui/select';
 
 // Definir un tipo para la respuesta de la API mejora la seguridad de tipos y el autocompletado.
 export interface Movement {
@@ -44,6 +45,8 @@ export const MovimientosClient = () => {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
+    const [periods, setPeriods] = useState<any[]>([]);
+    const [selectedPeriod, setSelectedPeriod] = useState<string>('all');
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -51,6 +54,20 @@ export const MovimientosClient = () => {
         return () => clearTimeout(timer);
     }, [search]);
 
+    useEffect(() => {
+        // Obtener periodos activos
+        const fetchPeriods = async () => {
+            try {
+                const res = await fetch('/api/periods?periodStatus=ACTIVE&pageSize=1000');
+                if (!res.ok) throw new Error('No se pudieron obtener los periodos.');
+                const data = await res.json();
+                setPeriods(data.periods || []);
+            } catch (e: any) {
+                toast.error(e.message);
+            }
+        };
+        fetchPeriods();
+    }, []);
 
     const fetchMovements = useCallback(async () => {
         setLoading(true);
@@ -60,6 +77,7 @@ export const MovimientosClient = () => {
                 pageSize: String(PAGE_SIZE),
                 search: debouncedSearch,
             });
+            if (selectedPeriod !== 'all') params.append('periodId', selectedPeriod);
             const res = await fetch(`/api/movements?${params.toString()}`);
             if (!res.ok) throw new Error("No se pudieron obtener los movimientos.");
 
@@ -87,7 +105,7 @@ export const MovimientosClient = () => {
         } finally {
             setLoading(false);
         }
-    }, [page, debouncedSearch]);
+    }, [page, debouncedSearch, selectedPeriod]);
 
     useEffect(() => {
         fetchMovements();
@@ -129,7 +147,6 @@ export const MovimientosClient = () => {
                     title={`Movimientos (${total})`}
                     description="Gestiona los movimientos de incidencias de los trabajadores"
                 />
-
                 <div className="ml-auto flex items-center gap-2">
                     <Input
                         placeholder="Filtrar por trabajador o incidencia..."
@@ -137,12 +154,21 @@ export const MovimientosClient = () => {
                         onChange={handleSearch}
                         className="max-w-sm"
                     />
+                    {/* Select de periodos activos */}
+                    <Select value={selectedPeriod} onValueChange={value => { setSelectedPeriod(value); setPage(1); }}>
+                        <SelectTrigger className="w-56"><SelectValue placeholder="Filtrar por periodo" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos los periodos</SelectItem>
+                            {periods.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.periodName} ({format(new Date(p.periodStart), 'dd/MM/yyyy')} - {format(new Date(p.periodEnd), 'dd/MM/yyyy')})</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Button onClick={handleCreate}>
                         <Plus className="mr-2 h-4 w-4" />
                         Agregar
                     </Button>
                 </div>
-                
             </div>
             <Separator />
             
