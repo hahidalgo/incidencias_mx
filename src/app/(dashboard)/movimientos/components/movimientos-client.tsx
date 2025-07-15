@@ -156,7 +156,7 @@ export const MovimientosClient = () => {
                     />
                     {/* Select de periodos activos */}
                     <Select value={selectedPeriod} onValueChange={value => { setSelectedPeriod(value); setPage(1); }}>
-                        <SelectTrigger className="w-56"><SelectValue placeholder="Filtrar por periodo" /></SelectTrigger>
+                        <SelectTrigger className="w-105"><SelectValue placeholder="Filtrar por periodo" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todos los periodos</SelectItem>
                             {periods.map(p => (
