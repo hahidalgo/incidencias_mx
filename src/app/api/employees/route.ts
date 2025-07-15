@@ -27,11 +27,11 @@ export async function GET(request: NextRequest) {
     const whereClause = {
       ...(search
         ? {
-            OR: [
-              { employeeName: { contains: search, mode: 'insensitive' as const } },
-              { employeeType: { contains: search, mode: 'insensitive' as const } },
-            ],
-          }
+          OR: [
+            { employeeName: { contains: search, mode: 'insensitive' as const } },
+            { employeeType: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
         : {}),
       ...(officeId ? { officeId } : {}), // Cambiado a string
     };
@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ employees, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     console.log(error);
+
     return NextResponse.json({ message: 'Error al obtener empleados' }, { status: 500 });
   }
 }
@@ -78,8 +79,8 @@ export async function POST(request: NextRequest) {
       },
       include: { office: { select: { officeName: true } } }
     });
-    
-return NextResponse.json(employee);
+
+    return NextResponse.json(employee);
   } catch (error) {
     return NextResponse.json({ message: 'Error al crear empleado' }, { status: 500 });
   }
@@ -108,8 +109,8 @@ export async function PUT(request: NextRequest) {
       },
       include: { office: { select: { officeName: true } } }
     });
-    
-return NextResponse.json(employee);
+
+    return NextResponse.json(employee);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar empleado' }, { status: 500 });
   }
@@ -127,8 +128,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
     }
     await prisma.employee.delete({ where: { id } });
-    
-return NextResponse.json({ message: 'Empleado eliminado correctamente' });
+
+    return NextResponse.json({ message: 'Empleado eliminado correctamente' });
   } catch (error) {
     return NextResponse.json({ message: 'Error al eliminar empleado' }, { status: 500 });
   }

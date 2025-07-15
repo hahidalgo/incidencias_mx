@@ -90,12 +90,12 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ message: 'El id es requerido' }, { status: 400 });
         }
         await prisma.period.delete({ where: { id } });
-        
+
         return NextResponse.json({ message: 'Periodo eliminado correctamente' });
     } catch (error) {
         return NextResponse.json({ message: 'Error al eliminar periodo' }, { status: 500 });
     }
-} 
+}
 
 // Nuevo endpoint para obtener el periodo actual
 export async function GET_CURRENT(request: NextRequest) {
@@ -112,6 +112,7 @@ export async function GET_CURRENT(request: NextRequest) {
         if (!period) {
             return NextResponse.json({ message: 'No hay periodo actual' }, { status: 404 });
         }
+
         return NextResponse.json(period);
     } catch (error) {
         return NextResponse.json({ message: 'Error al obtener el periodo actual' }, { status: 500 });

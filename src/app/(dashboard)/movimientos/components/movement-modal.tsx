@@ -165,6 +165,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
             ) {
                 setAlertMessage('No es posible asignar la incidencia 008 a un trabajador de tipo CONF con bono dominical diferente de 1.');
                 setLoading(false);
+                
                 return;
             }
             // Obtener el periodo actual

@@ -15,8 +15,10 @@ export async function GET(request: NextRequest) {
             orderBy: { periodStart: 'desc' },
         });
         if (!period) {
+
             return NextResponse.json({ message: 'No hay periodo actual' }, { status: 404 });
         }
+
         return NextResponse.json(period);
     } catch (error) {
         return NextResponse.json({ message: 'Error al obtener el periodo actual' }, { status: 500 });
