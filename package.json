@@ -1,8 +1,8 @@
 {
-    "name": "nextjs-15-starter-shadcn",
+    "name": "gestion-incidencias-ollamani",
     "version": "1.0.0",
     "private": false,
-    "website": "https://nextjs-15-starter-shadcn.vercel.app/",
+    "website": "https://incidencias-mx.vercel.app/",
     "license": "MIT",
     "scripts": {
         "dev": "next dev --turbopack",
