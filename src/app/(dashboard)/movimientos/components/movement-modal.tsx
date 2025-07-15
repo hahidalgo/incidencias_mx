@@ -165,7 +165,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
             ) {
                 setAlertMessage('No es posible asignar la incidencia 008 a un trabajador de tipo CONF con bono dominical diferente de 1.');
                 setLoading(false);
-                
+
                 return;
             }
             // Obtener el periodo actual
@@ -292,7 +292,10 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                                         <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                    {field.value ? (format(field.value, "PPP", { locale: es })) : (<span>Elige una fecha</span>)}
+                                                    {field.value instanceof Date && !isNaN(field.value.getTime())
+                                                        ? format(field.value, "PPP", { locale: es })
+                                                        : <span>Elige una fecha</span>
+                                                    }
                                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
