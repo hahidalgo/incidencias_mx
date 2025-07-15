@@ -92,8 +92,8 @@ export const MovimientosClient = () => {
                 employeeName: item.employee.employeeName ?? item.employee.employee_name,
                 incidentCode: item.incident.incidentCode ?? item.incident.incident_code,
                 incidentName: item.incident.incidentName ?? item.incident.incident_name,
-                date: item.incidence_date
-                    ? (() => { try { return format(new Date(item.incidence_date), "dd/MM/yyyy"); } catch { return 'Sin fecha'; } })()
+                date: item.incidenceDate
+                    ? (() => { try { return format(new Date(item.incidenceDate), "dd/MM/yyyy"); } catch { return 'Sin fecha'; } })()
                     : 'Sin fecha',
             }));
 
