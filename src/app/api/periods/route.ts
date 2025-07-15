@@ -95,26 +95,4 @@ export async function DELETE(request: NextRequest) {
     } catch (error) {
         return NextResponse.json({ message: 'Error al eliminar periodo' }, { status: 500 });
     }
-}
-
-// Nuevo endpoint para obtener el periodo actual
-export async function GET_CURRENT(request: NextRequest) {
-    try {
-        const now = new Date();
-        const period = await prisma.period.findFirst({
-            where: {
-                periodStart: { lte: now },
-                periodEnd: { gte: now },
-                periodStatus: 'ACTIVE',
-            },
-            orderBy: { periodStart: 'desc' },
-        });
-        if (!period) {
-            return NextResponse.json({ message: 'No hay periodo actual' }, { status: 404 });
-        }
-
-        return NextResponse.json(period);
-    } catch (error) {
-        return NextResponse.json({ message: 'Error al obtener el periodo actual' }, { status: 500 });
-    }
 } 
