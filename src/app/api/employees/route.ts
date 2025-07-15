@@ -17,20 +17,24 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = request.nextUrl;
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '7', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const search = searchParams.get('search') || '';
+  const officeId = searchParams.get('officeId'); // Nuevo parámetro
 
   const skip = (page - 1) * pageSize;
 
   try {
-    const whereClause = search
-      ? {
-          OR: [
-            { employeeName: { contains: search, mode: 'insensitive' as const } },
-            { employeeType: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
+    const whereClause = {
+      ...(search
+        ? {
+            OR: [
+              { employeeName: { contains: search, mode: 'insensitive' as const } },
+              { employeeType: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+      ...(officeId ? { officeId } : {}), // Cambiado a string
+    };
 
     const [employees, total] = await prisma.$transaction([
       prisma.employee.findMany({
@@ -47,6 +51,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ employees, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
+    console.log(error);
     return NextResponse.json({ message: 'Error al obtener empleados' }, { status: 500 });
   }
 }

@@ -64,7 +64,7 @@ interface EmployeeForm {
 }
 
 const initialForm: EmployeeForm = { office_id: '', employee_code: '', employee_name: '', employee_type: 'SIND', employee_status: 'ACTIVE' };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -88,6 +88,7 @@ export default function EmployeesPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [selectedOffice, setSelectedOffice] = useState('all'); // Valor inicial 'all'
 
   // Debounce search input
   useEffect(() => {
@@ -104,6 +105,7 @@ export default function EmployeesPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
+      if (selectedOffice !== 'all') params.append('officeId', selectedOffice); // Solo filtrar si no es 'all'
       const res = await fetch(`/api/employees?${params.toString()}`);
       if (!res.ok) throw new Error('No se pudieron obtener los empleados.');
       const data = await res.json();
@@ -126,7 +128,7 @@ export default function EmployeesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, selectedOffice]); // Agregar selectedOffice como dependencia
 
   useEffect(() => {
     fetchEmployees();
@@ -256,6 +258,14 @@ export default function EmployeesPage() {
         <h2 className="text-3xl font-bold">Empleados</h2>
         <div className="ml-auto flex items-center gap-2">
           <Input placeholder="Buscar empleado..." value={search} onChange={handleSearch} className="w-64" />
+          {/* Select para filtrar por oficina */}
+          <Select value={selectedOffice} onValueChange={value => { setSelectedOffice(value); setPage(1); }}>
+            <SelectTrigger className="w-56"><SelectValue placeholder="Filtrar por oficina" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las oficinas</SelectItem>
+              {offices.map(o => <SelectItem key={o.id} value={o.id}>{o.officeName}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
           </Button>
