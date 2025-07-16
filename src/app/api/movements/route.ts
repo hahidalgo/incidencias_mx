@@ -13,6 +13,87 @@ const movementSchema = z.object({
     incidence_observation: z.string().optional(),
 });
 
+
+
+/**
+ * Valida que todos los registros relacionados existan y estén activos
+ */
+async function validateRelatedRecords(periodId: string, employeeId: string, incidentId: string) {
+    const [period, employee, incident] = await Promise.all([
+        prisma.period.findUnique({
+            where: { id: periodId },
+            select: { id: true, periodStart: true, periodEnd: true, periodStatus: true }
+        }),
+        prisma.employee.findUnique({
+            where: { id: employeeId },
+            select: { id: true, employeeStatus: true }
+        }),
+        prisma.incident.findUnique({
+            where: { id: incidentId },
+            select: { id: true, incidentStatus: true }
+        })
+    ]);
+
+    if (!period) {
+        throw new Error("El período especificado no existe.");
+    }
+
+    if (period.periodStatus !== 'ACTIVE') {
+        throw new Error("El período especificado no está activo.");
+    }
+
+    if (!employee) {
+        throw new Error("El empleado especificado no existe.");
+    }
+
+    if (employee.employeeStatus !== 'ACTIVE') {
+        throw new Error("El empleado especificado no está activo.");
+    }
+
+    if (!incident) {
+        throw new Error("La incidencia especificada no existe.");
+    }
+
+    if (incident.incidentStatus !== 'ACTIVE') {
+        throw new Error("La incidencia especificada no está activa.");
+    }
+
+    return { period, employee, incident };
+}
+
+/**
+ * Valida que la fecha de incidencia esté dentro del rango del período
+ */
+function validateIncidenceDate(incidenceDate: Date, periodStart: Date, periodEnd: Date) {
+    if (incidenceDate < periodStart || incidenceDate > periodEnd) {
+        throw new Error("La fecha de incidencia debe estar dentro del rango del período seleccionado.");
+    }
+}
+
+/**
+ * Verifica si ya existe un movimiento duplicado para el mismo empleado, incidencia y período
+ */
+async function checkDuplicateMovement(periodId: string, employeeId: string, incidentId: string, excludeId?: string) {
+    const whereClause: any = {
+        periodId,
+        employeeId,
+        incidentId,
+        incidenceStatus: 'ACTIVE'
+    };
+
+    if (excludeId) {
+        whereClause.id = { not: excludeId };
+    }
+
+    const existingMovement = await prisma.movement.findFirst({
+        where: whereClause
+    });
+
+    if (existingMovement) {
+        throw new Error("Ya existe un movimiento activo para este empleado, incidencia y período.");
+    }
+}
+
 /**
  * Maneja los errores de la API de forma centralizada.
  * @param error - El error capturado.
@@ -37,6 +118,14 @@ function handleApiError(error: unknown, context: string): NextResponse {
                 { status: 404 }
             );
         }
+    }
+
+    // Manejar errores de validación personalizados
+    if (error instanceof Error) {
+        return NextResponse.json(
+            { message: error.message },
+            { status: 400 }
+        );
     }
 
     return NextResponse.json(
@@ -117,6 +206,15 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
 
+        // Validar registros relacionados
+        const { period } = await validateRelatedRecords(period_id, employee_id, incident_id);
+
+        // Validar fecha de incidencia
+        validateIncidenceDate(incidence_date, period.periodStart, period.periodEnd);
+
+        // Verificar duplicados
+        await checkDuplicateMovement(period_id, employee_id, incident_id);
+
         const movement = await prisma.movement.create({
             data: {
                 periodId: period_id,
@@ -125,6 +223,11 @@ export async function POST(request: NextRequest) {
                 incidenceDate: incidence_date,
                 incidenceObservation: incidence_observation || '',
                 incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
+            },
+            include: {
+                employee: true,
+                incident: true,
+                period: true,
             },
         });
 
@@ -150,8 +253,30 @@ export async function PUT(request: NextRequest) {
             );
         }
 
+        // Verificar que el movimiento existe
+        const existingMovement = await prisma.movement.findUnique({
+            where: { id },
+            select: { id: true, incidenceStatus: true }
+        });
+
+        if (!existingMovement) {
+            return NextResponse.json(
+                { message: "El movimiento especificado no existe." },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
         const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
+
+        // Validar registros relacionados
+        const { period } = await validateRelatedRecords(period_id, employee_id, incident_id);
+
+        // Validar fecha de incidencia
+        validateIncidenceDate(incidence_date, period.periodStart, period.periodEnd);
+
+        // Verificar duplicados (excluyendo el movimiento actual)
+        await checkDuplicateMovement(period_id, employee_id, incident_id, id);
 
         const movement = await prisma.movement.update({
             where: { id },
@@ -162,6 +287,11 @@ export async function PUT(request: NextRequest) {
                 incidenceDate: incidence_date,
                 incidenceObservation: incidence_observation || '',
                 incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
+            },
+            include: {
+                employee: true,
+                incident: true,
+                period: true,
             },
         });
 
