@@ -73,11 +73,13 @@ export async function POST(request: NextRequest) {
     const { user_name, user_email, user_password, user_status, user_rol, company_id, office_id, office_ids } = body;
     if (!user_name || !user_email || !user_password || user_status === undefined || user_rol === undefined || !company_id) {
       console.error('Faltan campos requeridos:', body);
+
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     const existing = await prisma.user.findFirst({ where: { userEmail: user_email } });
     if (existing) {
       console.error('Usuario ya existe:', user_email);
+
       return NextResponse.json({ message: 'El usuario ya existe' }, { status: 409 });
     }
     const hashedPassword = await bcrypt.hash(user_password, 10);
@@ -99,9 +101,11 @@ export async function POST(request: NextRequest) {
     } else if (office_id) {
       await prisma.userOffice.create({ data: { userId: user.id, officeId: office_id } });
     }
+
     return NextResponse.json(user);
   } catch (error) {
     console.error('Error en POST /api/users:', error);
+
     return NextResponse.json({ message: 'Error al crear usuario' }, { status: 500 });
   }
 }
@@ -137,6 +141,7 @@ export async function PUT(request: NextRequest) {
     } else if (office_id) {
       await prisma.userOffice.create({ data: { userId: id, officeId: office_id } });
     }
+    
     return NextResponse.json(user);
   } catch (error) {
     return NextResponse.json({ message: 'Error al editar usuario' }, { status: 500 });

@@ -103,20 +103,24 @@ export const UserFormDialog: React.FC<UserFormDialogProps> = ({ open, onOpenChan
     if (form.userRol === 'ENCARGADO_CASINO') {
       if (!form.companyId || !form.officeId) {
         setError('El Encargado de casino debe estar asociado a una empresa y a una oficina.');
+
         return;
       }
     }
     if (form.userRol === 'SUPERVISOR_REGIONES') {
       if (!form.companyId) {
         setError('El Supervisor Regiones debe estar asociado a una empresa.');
+
         return;
       }
       if (!form.officeIds || form.officeIds.length === 0) {
         setError('El Supervisor Regiones debe estar asociado al menos a una oficina.');
+
         return;
       }
       if (form.officeIds.length > 5) {
         setError('El Supervisor Regiones no puede estar asociado a más de 5 oficinas.');
+        
         return;
       }
     }

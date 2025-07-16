@@ -41,6 +41,7 @@ export default function UsersPage() {
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        
         return () => clearTimeout(timer);
     }, [search]);
 
