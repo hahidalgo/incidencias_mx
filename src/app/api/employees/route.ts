@@ -51,8 +51,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ employees, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
-    console.log(error);
-
+    console.error('Error al obtener empleados:', error);
     return NextResponse.json({ message: 'Error al obtener empleados' }, { status: 500 });
   }
 }

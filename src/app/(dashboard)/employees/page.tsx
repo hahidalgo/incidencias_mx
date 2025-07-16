@@ -144,7 +144,6 @@ export default function EmployeesPage() {
         
         setOffices(officeData);
         setOfficeMap(new Map(officeData.map((o: Office) => [o.id, o.officeName])));
-        console.log(officeData);
       } catch (e: any) {
         toast.error(e.message);
       }

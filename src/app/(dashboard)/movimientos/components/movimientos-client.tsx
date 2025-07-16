@@ -104,7 +104,6 @@ export const MovimientosClient = () => {
             const { movements, total, totalPages } = await res.json();
 
             setMovements(movements);
-            console.log(movements);
             const formattedMovements: MovementColumn[] = movements.map((item: any) => ({
                 id: item.id,
                 employeeCode: item.employee.employeeCode ?? item.employee.employee_code,

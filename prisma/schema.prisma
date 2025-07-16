@@ -21,8 +21,9 @@ enum Status {
 
 enum Role {
   SUPER_ADMIN
-  ADMIN
-  USER
+  SUPERVISOR_REGIONES
+  ENCARGADO_CASINO
+  ENCARGADO_RRHH
 }
 
 model Company {
@@ -114,7 +115,7 @@ model User {
   userEmail     String   @unique @map("user_email")
   userPassword  String   @map("user_password")
   userStatus    Status   @default(ACTIVE) @map("user_status")
-  userRol       Role     @default(USER) @map("user_rol")
+  userRol       Role     @default(ENCARGADO_CASINO) @map("user_rol")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
 
