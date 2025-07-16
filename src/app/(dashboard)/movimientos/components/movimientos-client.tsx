@@ -69,6 +69,26 @@ export const MovimientosClient = () => {
         fetchPeriods();
     }, []);
 
+    useEffect(() => {
+        // Solo buscar el periodo actual si no hay uno seleccionado por el usuario
+        if (periods.length > 0 && selectedPeriod === 'all') {
+            const fetchCurrentPeriod = async () => {
+                try {
+                    const res = await fetch('/api/periods/current');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.id) {
+                            setSelectedPeriod(data.id);
+                        }
+                    }
+                } catch (e) {
+                    // Si falla, simplemente deja "all"
+                }
+            };
+            fetchCurrentPeriod();
+        }
+    }, [periods, selectedPeriod]);
+
     const fetchMovements = useCallback(async () => {
         setLoading(true);
         try {

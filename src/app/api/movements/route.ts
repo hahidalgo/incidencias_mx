@@ -56,10 +56,11 @@ export async function GET(request: NextRequest) {
         const page = parseInt(searchParams.get("page") || "1", 10);
         const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
         const search = searchParams.get("search") || "";
+        const periodId = searchParams.get("periodId");
 
         const skip = (page - 1) * pageSize;
 
-        const where = search
+        let where: any = search
             ? {
                 OR: [
                     {
@@ -75,6 +76,10 @@ export async function GET(request: NextRequest) {
                 ],
             }
             : {};
+
+        if (periodId) {
+            where = { ...where, periodId };
+        }
 
         const [movements, total] = await prisma.$transaction([
             prisma.movement.findMany({
