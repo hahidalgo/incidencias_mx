@@ -6,10 +6,13 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
     try {
         const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
         const period = await prisma.period.findFirst({
             where: {
-                periodStart: { lte: now },
-                periodEnd: { gte: now },
+                periodStart: { lte: endOfDay },
+                periodEnd: { gte: startOfDay },
                 periodStatus: 'ACTIVE',
             },
             orderBy: { periodStart: 'desc' },
