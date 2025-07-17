@@ -72,26 +72,11 @@ export default function DashboardPage() {
         <section className="mb-8 bg-white rounded-xl shadow-md px-8 py-6" >
           <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
             <PenToolIcon className="w-6 h-6" />
-            Registra
+            Incidencias
           </h2>
           <div className="flex gap-6 flex-wrap  text-[#f39200]">
             <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />
-            <CardButton icon={"vacaciones"} label="Vacaciones" />
-            <CardButton icon={"tiempolibre"} label="Tiempo Libre" />
-          </div>
-        </section>
-
-        {/* Consulta */}
-        <section className="mb-8">
-          <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
-            <SearchIcon className="w-6 h-6" />
-            Consulta
-          </h2>
-          <div className="flex gap-6 flex-wrap">
-            <CardButton icon={"reportes"} label="Reportes" />
-            <CardButton icon={"datos"} label="Datos Maestros" />
-            <CardButton icon={"comunicados"} label="Comunicados" />
-            <CardButton icon={"nomina"} label="Recibos de Nómina" />
+            <CardButton icon={"reportes"} label="Generar cvs" source="/movimientos" />
           </div>
         </section>
       </main>
