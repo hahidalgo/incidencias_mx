@@ -4,6 +4,7 @@ import prisma from '@/prisma/client';
 function toCsv(rows: Array<{periodName: string, employeeCode: number, incidentCode: string}>): string {
   const header = 'nombre_periodo,codigo_empleado,codigo_incidencia';
   const data = rows.map(r => `${r.periodName},${r.employeeCode},${r.incidentCode}`).join('\n');
+
   return `${header}\n${data}`;
 }
 
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
       incidentCode: m.incident.incidentCode,
     }));
     const csv = toCsv(rows);
+    
     return new NextResponse(csv, {
       status: 200,
       headers: {

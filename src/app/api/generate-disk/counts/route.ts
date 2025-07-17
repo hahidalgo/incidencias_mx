@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     ids.forEach((id) => {
       if (!(id in result)) result[id] = 0;
     });
+    
     return NextResponse.json({ counts: result });
   } catch (e) {
     return NextResponse.json({ counts: {} }, { status: 500 });

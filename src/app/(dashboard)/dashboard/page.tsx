@@ -46,6 +46,7 @@ export default function DashboardPage() {
         const periodRes = await fetch('/api/periods/current');
         if (!periodRes.ok) {
           setIncidenciasCount(0);
+          
           return;
         }
         const period = await periodRes.json();
@@ -53,6 +54,7 @@ export default function DashboardPage() {
         const movRes = await fetch(`/api/movements?page=1&pageSize=1&periodId=${period.id}`);
         if (!movRes.ok) {
           setIncidenciasCount(0);
+
           return;
         }
         const movData = await movRes.json();
