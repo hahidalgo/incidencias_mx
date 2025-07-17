@@ -76,7 +76,7 @@ export default function DashboardPage() {
           </h2>
           <div className="flex gap-6 flex-wrap  text-[#f39200]">
             <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />
-            <CardButton icon={"reportes"} label="Generar cvs" source="/movimientos" />
+            <CardButton icon={"reportes"} label="Generar cvs" source="/generate-disk" />
           </div>
         </section>
       </main>
