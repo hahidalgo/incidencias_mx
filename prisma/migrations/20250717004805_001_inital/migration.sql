@@ -2,7 +2,7 @@
 CREATE TYPE "Status" AS ENUM ('INACTIVE', 'ACTIVE');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'USER');
+CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'SUPERVISOR_REGIONES', 'ENCARGADO_CASINO', 'ENCARGADO_RRHH');
 
 -- CreateTable
 CREATE TABLE "companies" (
@@ -77,7 +77,7 @@ CREATE TABLE "users" (
     "user_email" TEXT NOT NULL,
     "user_password" TEXT NOT NULL,
     "user_status" "Status" NOT NULL DEFAULT 'ACTIVE',
-    "user_rol" "Role" NOT NULL DEFAULT 'USER',
+    "user_rol" "Role" NOT NULL DEFAULT 'ENCARGADO_CASINO',
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
