@@ -23,6 +23,7 @@ const icons = {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [incidenciasCount, setIncidenciasCount] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +38,31 @@ export default function DashboardPage() {
     };
     checkSession();
   }, [router]);
+
+  useEffect(() => {
+    const fetchIncidenciasCount = async () => {
+      try {
+        // Obtener periodo actual
+        const periodRes = await fetch('/api/periods/current');
+        if (!periodRes.ok) {
+          setIncidenciasCount(0);
+          return;
+        }
+        const period = await periodRes.json();
+        // Contar movimientos activos de ese periodo
+        const movRes = await fetch(`/api/movements?page=1&pageSize=1&periodId=${period.id}`);
+        if (!movRes.ok) {
+          setIncidenciasCount(0);
+          return;
+        }
+        const movData = await movRes.json();
+        setIncidenciasCount(movData.total || 0);
+      } catch {
+        setIncidenciasCount(0);
+      }
+    };
+    fetchIncidenciasCount();
+  }, []);
 
   if (!user) {
     return (
@@ -62,7 +88,7 @@ export default function DashboardPage() {
           <div className="flex gap-6">
             <div className="bg-[#0e2655] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
               <Megaphone className="w-12 h-12" />
-              <span className="text-2xl font-bold">02</span>
+              <span className="text-2xl font-bold">{incidenciasCount !== null ? incidenciasCount : '...'}</span>
               <span className="text-base font-medium mt-1">Nuevas incidencias</span>
             </div>
           </div>
