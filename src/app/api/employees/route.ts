@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * pageSize;
 
-    let whereClause: any = {
+    const whereClause: any = {
       ...(search
         ? {
           OR: [
