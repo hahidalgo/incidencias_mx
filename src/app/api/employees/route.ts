@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 import { verifyAuthToken } from '@/lib/auth';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -8,23 +9,77 @@ function getTokenFromRequest(request: NextRequest) {
   return request.cookies.get('token')?.value;
 }
 
+/**
+ * Obtiene las oficinas del usuario logueado
+ */
+async function getUserOffices(userId: string) {
+    const userOffices = await prisma.userOffice.findMany({
+        where: { userId },
+        include: {
+            office: {
+                select: { id: true, officeName: true }
+            }
+        }
+    });
+    
+    return userOffices.map(uo => uo.office.id);
+}
+
 // GET: Listar todos los empleados con paginación y búsqueda
+// Solo devuelve empleados de las oficinas del usuario logueado
 export async function GET(request: NextRequest) {
-  const token = getTokenFromRequest(request);
-  if (!verifyAuthToken(token)) {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-  }
-
-  const { searchParams } = request.nextUrl;
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
-  const search = searchParams.get('search') || '';
-  const officeId = searchParams.get('officeId'); // Nuevo parámetro
-
-  const skip = (page - 1) * pageSize;
-
   try {
-    const whereClause = {
+    // Obtener el token del usuario logueado
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+    }
+
+    // Verificar el token y obtener el ID del usuario
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as { id?: string, userEmail?: string };
+    if (!payload.id && !payload.userEmail) {
+      return NextResponse.json({ message: 'Token inválido' }, { status: 401 });
+    }
+
+    // Obtener el usuario y sus oficinas
+    let user = null;
+    if (payload.id) {
+      user = await prisma.user.findUnique({
+        where: { id: payload.id },
+        select: { id: true, userRol: true }
+      });
+    } else {
+      user = await prisma.user.findUnique({
+        where: { userEmail: payload.userEmail! },
+        select: { id: true, userRol: true }
+      });
+    }
+
+    if (!user) {
+      return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    // Si es SUPER_ADMIN, puede ver todos los empleados
+    let userOfficeIds: string[] = [];
+    if (user.userRol !== 'SUPER_ADMIN') {
+      userOfficeIds = await getUserOffices(user.id);
+      if (userOfficeIds.length === 0) {
+        return NextResponse.json(
+          { message: 'No tienes oficinas asignadas' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const { searchParams } = request.nextUrl;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+    const search = searchParams.get('search') || '';
+    const officeId = searchParams.get('officeId');
+
+    const skip = (page - 1) * pageSize;
+
+    let whereClause: any = {
       ...(search
         ? {
           OR: [
@@ -33,8 +88,13 @@ export async function GET(request: NextRequest) {
           ],
         }
         : {}),
-      ...(officeId ? { officeId } : {}), // Cambiado a string
+      ...(officeId ? { officeId } : {}),
     };
+
+    // Filtrar por oficinas del usuario (excepto para SUPER_ADMIN)
+    if (user.userRol !== 'SUPER_ADMIN') {
+      whereClause.officeId = { in: userOfficeIds };
+    }
 
     const [employees, total] = await prisma.$transaction([
       prisma.employee.findMany({

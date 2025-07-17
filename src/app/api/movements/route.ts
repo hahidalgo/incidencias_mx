@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/prisma/client";
 import { z } from 'zod';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import jwt from 'jsonwebtoken';
 
 // Esquema de validación para la creación y actualización de movimientos.
 // Usamos `z.coerce.date()` para convertir el string de fecha que llega en el JSON a un objeto Date.
@@ -95,6 +96,22 @@ async function checkDuplicateMovement(periodId: string, employeeId: string, inci
 }
 
 /**
+ * Obtiene las oficinas del usuario logueado
+ */
+async function getUserOffices(userId: string) {
+    const userOffices = await prisma.userOffice.findMany({
+        where: { userId },
+        include: {
+            office: {
+                select: { id: true, officeName: true }
+            }
+        }
+    });
+    
+    return userOffices.map(uo => uo.office.id);
+}
+
+/**
  * Maneja los errores de la API de forma centralizada.
  * @param error - El error capturado.
  * @param context - Un string que identifica el contexto del error (ej. 'MOVEMENTS_POST').
@@ -136,11 +153,63 @@ function handleApiError(error: unknown, context: string): NextResponse {
 
 /**
  * GET: Obtiene una lista paginada y filtrable de movimientos de incidencias.
+ * Solo devuelve movimientos de empleados que pertenezcan a las oficinas del usuario logueado.
  * @param request - La solicitud Next.js.
  * @returns Una respuesta JSON con la lista de movimientos, el total y el número de páginas.
  */
 export async function GET(request: NextRequest) {
     try {
+        // Obtener el token del usuario logueado
+        const token = request.cookies.get('token')?.value;
+        if (!token) {
+            return NextResponse.json(
+                { message: "No autenticado" },
+                { status: 401 }
+            );
+        }
+
+        // Verificar el token y obtener el ID del usuario
+        const payload = jwt.verify(token, process.env.JWT_SECRET!) as { id?: string, userEmail?: string };
+        if (!payload.id && !payload.userEmail) {
+            return NextResponse.json(
+                { message: "Token inválido" },
+                { status: 401 }
+            );
+        }
+
+        // Obtener el usuario y sus oficinas
+        let user = null;
+        if (payload.id) {
+            user = await prisma.user.findUnique({
+                where: { id: payload.id },
+                select: { id: true, userRol: true }
+            });
+        } else {
+            user = await prisma.user.findUnique({
+                where: { userEmail: payload.userEmail! },
+                select: { id: true, userRol: true }
+            });
+        }
+
+        if (!user) {
+            return NextResponse.json(
+                { message: "Usuario no encontrado" },
+                { status: 404 }
+            );
+        }
+
+        // Si es SUPER_ADMIN, puede ver todos los movimientos
+        let userOfficeIds: string[] = [];
+        if (user.userRol !== 'SUPER_ADMIN') {
+            userOfficeIds = await getUserOffices(user.id);
+            if (userOfficeIds.length === 0) {
+                return NextResponse.json(
+                    { message: "No tienes oficinas asignadas" },
+                    { status: 403 }
+                );
+            }
+        }
+
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get("page") || "1", 10);
         const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
@@ -166,8 +235,20 @@ export async function GET(request: NextRequest) {
             }
             : {};
 
+        // Filtrar por período si se especifica
         if (periodId) {
             where = { ...where, periodId };
+        }
+
+        // Filtrar por oficinas del usuario (excepto para SUPER_ADMIN)
+        if (user.userRol !== 'SUPER_ADMIN') {
+            where = {
+                ...where,
+                employee: {
+                    ...where.employee,
+                    officeId: { in: userOfficeIds }
+                }
+            };
         }
 
         const [movements, total] = await prisma.$transaction([
@@ -176,7 +257,13 @@ export async function GET(request: NextRequest) {
                 skip,
                 take: pageSize,
                 include: {
-                    employee: true,
+                    employee: {
+                        include: {
+                            office: {
+                                select: { id: true, officeName: true }
+                            }
+                        }
+                    },
                     incident: true,
                 },
                 orderBy: {
