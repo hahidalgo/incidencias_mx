@@ -157,13 +157,23 @@ export const MovementModal: React.FC<MovementModalProps> = ({
             if (!selectedEmployee || !selectedIncident) {
                 throw new Error('Empleado o incidencia no válidos.');
             }
-            // Validación especial
+            // Validación especial para Prima Dominical: solo domingo
+            if (selectedIncident.incident_code === '008') {
+                const day = values.incidenceDate.getDay();
+                if (day !== 0) { // 0 es domingo
+                    toast.error('La Prima Dominical solo puede registrarse en un día domingo.');
+                    setLoading(false);
+                    
+                    return;
+                }
+            }
+            // Validación especial existente
             if (
                 selectedEmployee.employee_type === 'CONF' &&
                 selectedEmployee.employee_sunday_bonus !== 1 &&
                 selectedIncident.incident_code === '008'
             ) {
-                setAlertMessage('No es posible asignar la incidencia 008 a un trabajador de tipo CONF con bono dominical diferente de 1.');
+                toast.error('No es posible asignar la Prima Dominical a este trabajador de tipo CONF');
                 setLoading(false);
 
                 return;
