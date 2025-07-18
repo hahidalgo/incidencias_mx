@@ -102,8 +102,9 @@ export default function DashboardPage() {
             <PenToolIcon className="w-6 h-6" />
             Incidencias
           </h2>
-          <div className="flex gap-6 flex-wrap  text-[#f39200]">
+          <div className="flex justify-around  text-[#f39200]">
             <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />
+            <CardButton icon={"datos"} label="Revisión" source="/review" />
             <CardButton icon={"reportes"} label="Generar cvs" source="/generate-disk" />
           </div>
         </section>
