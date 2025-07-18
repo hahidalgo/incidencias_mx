@@ -21,6 +21,13 @@ const icons = {
   nomina: <CalendarSync className="w-12 h-12 group-hover:scale-110 transition-transform" />,
 };
 
+// Reglas de visibilidad por rol
+const buttonRules = {
+  incidencias: ['SUPER_ADMIN', 'ENCARGADO_RRHH', 'SUPERVISOR_REGIONES', 'ENCARGADO_CASINO'],
+  datos: ['SUPER_ADMIN', 'ENCARGADO_RRHH', 'SUPERVISOR_REGIONES'],
+  reportes: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
+};
+
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [incidenciasCount, setIncidenciasCount] = useState<number | null>(null);
@@ -66,6 +73,12 @@ export default function DashboardPage() {
     fetchIncidenciasCount();
   }, []);
 
+  // Función para verificar permisos de botones
+  const canAccessButton = (button: keyof typeof buttonRules) => {
+    if (!user || !(user as any).userRol) return false;
+    return buttonRules[button].includes((user as any).userRol);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -103,9 +116,9 @@ export default function DashboardPage() {
             Incidencias
           </h2>
           <div className="flex justify-around  text-[#f39200]">
-            <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />
-            <CardButton icon={"datos"} label="Revisión" source="/review" />
-            <CardButton icon={"reportes"} label="Generar cvs" source="/generate-disk" />
+            {canAccessButton('incidencias') && <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />}
+            {canAccessButton('datos') && <CardButton icon={"datos"} label="Revisión" source="/review" />}
+            {canAccessButton('reportes') && <CardButton icon={"reportes"} label="Generar cvs" source="/generate-disk" />}
           </div>
         </section>
       </main>
