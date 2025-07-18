@@ -12,6 +12,7 @@ import {
     NavigationMenuContent,
     NavigationMenuLink
 } from '@/components/ui/navigation-menu';
+import { canAccess, roleRules } from '@/lib/roleUtils';
 
 const NavigationBar = () => {
     const [user, setUser] = useState<any>(null);
@@ -23,6 +24,7 @@ const NavigationBar = () => {
             const res = await fetch('/api/auth/me');
             if (res.ok) {
                 const data = await res.json();
+                console.log(data);
                 setUser(data.user);
             } else {
                 setUser(null);
@@ -82,42 +84,54 @@ const NavigationBar = () => {
                             </NavigationMenuTrigger>
                             <NavigationMenuContent>
                                 <div className="flex flex-col min-w-[260px] max-h-[400px] max-w-full overflow-y-auto overflow-x-hidden">
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/companies" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
-                                            <Building2Icon className="w-5 h-5" />
-                                            Compañías
-                                        </Link>
-                                    </NavigationMenuLink>
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
-                                            <FactoryIcon className="w-5 h-5" />
-                                            Oficinas
-                                        </Link>
-                                    </NavigationMenuLink>
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/periods" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
-                                            <CalendarIcon className="w-5 h-5" />
-                                            Periodos de Pago
-                                        </Link>
-                                    </NavigationMenuLink>
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/incidents" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
-                                            <AlertCircleIcon className="w-5 h-5" />
-                                            Incidentes
-                                        </Link>
-                                    </NavigationMenuLink>
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
-                                            <UsersRound className="w-5 h-5" />
-                                            Empleados
-                                        </Link>
-                                    </NavigationMenuLink>
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/users" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
-                                            <UserIcon className="w-5 h-5" />
-                                            Usuarios
-                                        </Link>
-                                    </NavigationMenuLink>
+                                    {canAccess(user?.userRol, 'menu', 'companies') && (
+                                        <NavigationMenuLink asChild>
+                                            <Link href="/companies" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                                <Building2Icon className="w-5 h-5" />
+                                                Compañías
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    )}
+                                    {canAccess(user?.userRol, 'menu', 'offices') && (
+                                        <NavigationMenuLink asChild>
+                                            <Link href="/offices" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                                <FactoryIcon className="w-5 h-5" />
+                                                Oficinas
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    )}
+                                    {canAccess(user?.userRol, 'menu', 'periods') && (
+                                        <NavigationMenuLink asChild>
+                                            <Link href="/periods" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                                <CalendarIcon className="w-5 h-5" />
+                                                Periodos de Pago
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    )}
+                                    {canAccess(user?.userRol, 'menu', 'incidents') && (
+                                        <NavigationMenuLink asChild>
+                                            <Link href="/incidents" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                                <AlertCircleIcon className="w-5 h-5" />
+                                                Incidentes
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    )}
+                                    {canAccess(user?.userRol, 'menu', 'employees') && (
+                                        <NavigationMenuLink asChild>
+                                            <Link href="/employees" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                                <UsersRound className="w-5 h-5" />
+                                                Empleados
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    )}
+                                    {canAccess(user?.userRol, 'menu', 'users') && (
+                                        <NavigationMenuLink asChild>
+                                            <Link href="/users" className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2">
+                                                <UserIcon className="w-5 h-5" />
+                                                Usuarios
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    )}
                                 </div>
                             </NavigationMenuContent>
                         </NavigationMenuItem>
