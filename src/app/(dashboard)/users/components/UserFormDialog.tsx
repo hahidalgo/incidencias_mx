@@ -36,9 +36,9 @@ interface UserFormDialogProps {
 
 const ROLE_OPTIONS = [
   { value: 'SUPER_ADMIN', label: 'Super Administrador' },
-  { value: 'SUPERVISOR_REGIONES', label: 'Supervisor Regional' },
-  { value: 'ENCARGADO_CASINO', label: 'Encargado de casino' },
-  { value: 'ENCARGADO_RRHH', label: 'Encargado de RRHH' },
+  { value: 'SUPERVISOR_REGIONES', label: 'Gerente de Zona' },
+  { value: 'ENCARGADO_CASINO', label: 'RRHH Playcity' },
+  { value: 'ENCARGADO_RRHH', label: 'Administrador de Personal' },
 ];
 
 const STATUS_OPTIONS = [
@@ -102,24 +102,24 @@ export const UserFormDialog: React.FC<UserFormDialogProps> = ({ open, onOpenChan
     setError(null);
     if (form.userRol === 'ENCARGADO_CASINO') {
       if (!form.companyId || !form.officeId) {
-        setError('El Encargado de casino debe estar asociado a una empresa y a una oficina.');
+        setError('El RRHH Play City  debe estar asociado a una empresa y a una oficina.');
 
         return;
       }
     }
     if (form.userRol === 'SUPERVISOR_REGIONES') {
       if (!form.companyId) {
-        setError('El Supervisor Regiones debe estar asociado a una empresa.');
+        setError('El Gerente de zona debe estar asociado a una empresa.');
 
         return;
       }
       if (!form.officeIds || form.officeIds.length === 0) {
-        setError('El Supervisor Regiones debe estar asociado al menos a una oficina.');
+        setError('El Gerente de zona debe estar asociado al menos a una oficina.');
 
         return;
       }
-      if (form.officeIds.length > 5) {
-        setError('El Supervisor Regiones no puede estar asociado a más de 5 oficinas.');
+      if (form.officeIds.length > 6) {
+        setError('El Gerente de zona no puede estar asociado a más de 5 oficinas.');
         
         return;
       }
