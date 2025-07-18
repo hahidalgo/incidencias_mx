@@ -14,7 +14,7 @@ import {
 } from "@/registry/new-york-v4/ui/table";
 import { toast } from "sonner";
 
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 interface Period {
   id: string;
@@ -64,15 +64,19 @@ export default function GenerateDiskPage() {
     fetchPeriods();
   }, [fetchPeriods]);
 
-  const handleDownload = async (periodId: string) => {
+  const handleDownload = async (periodId: string, periodName: string) => {
     try {
       const res = await fetch(`/api/generate-disk/download?periodId=${periodId}`);
       if (!res.ok) throw new Error("No se pudo generar el archivo");
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
+      const now = new Date();
+      const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const time = `${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+      const dateTimeString = `${date}-${time}`;
       a.href = url;
-      a.download = `periodo_${periodId}.csv`;
+      a.download = `periodo${periodName}_${dateTimeString}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -120,7 +124,7 @@ export default function GenerateDiskPage() {
                   <TableCell>{new Date(period.periodEnd).toLocaleDateString()}</TableCell>
                   <TableCell>{counts[period.id] ?? 0}</TableCell>
                   <TableCell>
-                    <Button variant="outline" size="icon" onClick={() => handleDownload(period.id)}>
+                    <Button variant="outline" size="icon" onClick={() => handleDownload(period.id,period.periodName)}>
                       <Download className="w-4 h-4" />
                     </Button>
                   </TableCell>

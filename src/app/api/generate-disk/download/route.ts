@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/prisma/client';
 
 function toCsv(rows: Array<{periodName: string, employeeCode: number, incidentCode: string}>): string {
-  const header = 'nombre_periodo,codigo_empleado,codigo_incidencia';
-  const data = rows.map(r => `${r.periodName},${r.employeeCode},${r.incidentCode}`).join('\n');
+  //const header = 'nombre_periodo,codigo_empleado,codigo_incidencia';
+  //const data = rows.map(r => `${r.periodName}|${r.employeeCode}|${r.incidentCode}|1|0`).join('\n');
+  //return `${header}\n${data}`;
+  const data = rows.map(r => `${r.employeeCode}|${r.incidentCode}|1|0`).join('\n');
 
-  return `${header}\n${data}`;
+  return `${data}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -32,12 +34,14 @@ export async function GET(request: NextRequest) {
       incidentCode: m.incident.incidentCode,
     }));
     const csv = toCsv(rows);
-    
+    const fileName = `periodo_${period.periodName}-incidencias.csv`;
+    console.log('Period:', period.periodName);
+
     return new NextResponse(csv, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="periodo_${period.periodName}.csv"`,
+        'Content-Disposition': `attachment; filename="periodo_${fileName}.csv"`,
       },
     });
   } catch (e) {
