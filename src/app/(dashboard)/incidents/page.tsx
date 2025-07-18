@@ -54,7 +54,7 @@ interface IncidentForm {
 }
 
 const initialForm: IncidentForm = { incidentCode: '', incidentName: '', incidentStatus: 'ACTIVE' };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function IncidentsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);

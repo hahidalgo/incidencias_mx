@@ -63,7 +63,7 @@ interface OfficeForm {
 }
 
 const initialForm: OfficeForm = { companyId: '', officeName: '', officeStatus: 'ACTIVE' };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function OfficesPage() {
   const [offices, setOffices] = useState<Office[]>([]);

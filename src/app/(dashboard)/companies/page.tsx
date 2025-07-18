@@ -55,7 +55,7 @@ interface CompanyForm {
 }
 
 const initialForm: CompanyForm = { companyName: '', companyStatus: 'ACTIVE' };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
