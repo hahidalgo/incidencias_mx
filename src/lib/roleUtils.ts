@@ -1,11 +1,14 @@
+import { Incident } from './../generated/prisma/index.d';
 // Reglas centralizadas de acceso por rol
-type EmployeeActions = 'create' | 'edit' | 'delete' | 'btnForm' | 'filter';
 type DashboardActions = 'incidencias' | 'datos' | 'reportes';
+type EmployeeActions = 'create' | 'edit' | 'delete' | 'btnForm' | 'filter';
+type IncidentActions = 'create' | 'edit' | 'delete' | 'btnForm' | 'filter';
 
 type RoleRules = {
   menu: Record<string, string[]>;
-  employees: Record<EmployeeActions, string[]>;
   dashboard: Record<DashboardActions, string[]>;
+  employees: Record<EmployeeActions, string[]>;
+  incidents: Record<IncidentActions, string[]>;
   
 };
 
@@ -18,6 +21,11 @@ export const roleRules: RoleRules = {
     employees: ['SUPER_ADMIN', 'ENCARGADO_RRHH', 'SUPERVISOR_REGIONES', 'ENCARGADO_CASINO'],
     users: ['SUPER_ADMIN'],
   },
+  dashboard: {
+    incidencias: ['SUPER_ADMIN', 'ENCARGADO_RRHH', 'SUPERVISOR_REGIONES', 'ENCARGADO_CASINO'],
+    datos: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
+    reportes: ['SUPER_ADMIN', 'SUPERVISOR_REGIONES', 'ENCARGADO_RRHH'],
+  },
   employees: {
     btnForm: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
     filter: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
@@ -25,12 +33,14 @@ export const roleRules: RoleRules = {
     edit: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
     delete: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
   },
-  
-  dashboard: {
-    incidencias: ['SUPER_ADMIN', 'ENCARGADO_RRHH', 'SUPERVISOR_REGIONES', 'ENCARGADO_CASINO'],
-    datos: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
-    reportes: ['SUPER_ADMIN', 'SUPERVISOR_REGIONES', 'ENCARGADO_RRHH'],
+  incidents: {
+    btnForm: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
+    filter: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
+    create: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
+    edit: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
+    delete: ['SUPER_ADMIN', 'ENCARGADO_RRHH'],
   },
+  
 
 };
 
