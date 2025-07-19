@@ -215,6 +215,7 @@ export async function GET(request: NextRequest) {
         const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
         const search = searchParams.get("search") || "";
         const periodId = searchParams.get("periodId");
+        const officeId = searchParams.get("officeId");
 
         const skip = (page - 1) * pageSize;
 
@@ -240,8 +241,17 @@ export async function GET(request: NextRequest) {
             where = { ...where, periodId };
         }
 
-        // Filtrar por oficinas del usuario (excepto para SUPER_ADMIN)
-        if (user.userRol !== 'SUPER_ADMIN') {
+        // Filtrar por officeId si se especifica
+        if (officeId && officeId !== 'all') {
+            where = {
+                ...where,
+                employee: {
+                    ...where.employee,
+                    officeId: officeId
+                }
+            };
+        } else if (user.userRol !== 'SUPER_ADMIN') {
+            // Filtrar por oficinas del usuario (excepto para SUPER_ADMIN)
             where = {
                 ...where,
                 employee: {

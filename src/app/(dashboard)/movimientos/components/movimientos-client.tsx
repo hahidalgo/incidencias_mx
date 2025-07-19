@@ -47,6 +47,8 @@ export const MovimientosClient = () => {
     const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
     const [periods, setPeriods] = useState<any[]>([]);
     const [selectedPeriod, setSelectedPeriod] = useState<string>('all');
+    const [offices, setOffices] = useState<{id: string, officeName: string}[]>([]);
+    const [selectedOffice, setSelectedOffice] = useState<string>('all');
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -89,6 +91,25 @@ export const MovimientosClient = () => {
         }
     }, [periods, selectedPeriod]);
 
+    // Obtener oficinas asignadas al usuario activo
+    useEffect(() => {
+        const fetchOffices = async () => {
+            try {
+                const res = await fetch('/api/user/offices', {
+                  headers: {
+                    // Aquí deberías pasar el token o userId si tu backend lo requiere
+                  }
+                });
+                if (!res.ok) throw new Error('No se pudieron obtener las oficinas.');
+                const data = await res.json();
+                setOffices(data || []);
+            } catch (e: any) {
+                toast.error(e.message);
+            }
+        };
+        fetchOffices();
+    }, []);
+
     const fetchMovements = useCallback(async () => {
         setLoading(true);
         try {
@@ -98,6 +119,7 @@ export const MovimientosClient = () => {
                 search: debouncedSearch,
             });
             if (selectedPeriod !== 'all') params.append('periodId', selectedPeriod);
+            if (selectedOffice !== 'all') params.append('officeId', selectedOffice);
             const res = await fetch(`/api/movements?${params.toString()}`);
             if (!res.ok) throw new Error("No se pudieron obtener los movimientos.");
 
@@ -124,7 +146,7 @@ export const MovimientosClient = () => {
         } finally {
             setLoading(false);
         }
-    }, [page, debouncedSearch, selectedPeriod]);
+    }, [page, debouncedSearch, selectedPeriod, selectedOffice]);
 
     useEffect(() => {
         fetchMovements();
@@ -173,6 +195,16 @@ export const MovimientosClient = () => {
                         onChange={handleSearch}
                         className="max-w-sm"
                     />
+                    {/* Select de oficinas asignadas */}
+                    <Select value={selectedOffice} onValueChange={value => { setSelectedOffice(value); setPage(1); }}>
+                        <SelectTrigger className="w-60"><SelectValue placeholder="Filtrar por oficina" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las oficinas</SelectItem>
+                            {offices.map(o => (
+                                <SelectItem key={o.id} value={o.id}>{o.officeName}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     {/* Select de periodos activos */}
                     <Select value={selectedPeriod} onValueChange={value => { setSelectedPeriod(value); setPage(1); }}>
                         <SelectTrigger className="w-105"><SelectValue placeholder="Filtrar por periodo" /></SelectTrigger>
