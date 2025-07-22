@@ -182,7 +182,7 @@ export const MovimientosClient = () => {
     };
 
     const columns = useMemo(() => getColumns(handleEdit), [movements]);
-    console.log(user);
+
     return (
         <>
             <MovementModal

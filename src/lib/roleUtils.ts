@@ -68,7 +68,9 @@ export function canAccess(
     return Array.isArray((rule as Record<string, string[]>)[action]) && (rule as Record<string, string[]>)[action].includes(userRol);
   }
   if (Array.isArray(rule)) {
+
     return rule.includes(userRol);
   }
+  
   return false;
 } 

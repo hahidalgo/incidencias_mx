@@ -76,6 +76,7 @@ export default function DashboardPage() {
   // Función para verificar permisos de botones
   const canAccessButton = (button: keyof typeof buttonRules) => {
     if (!user || !(user as any).userRol) return false;
+    
     return buttonRules[button].includes((user as any).userRol);
   };
 
