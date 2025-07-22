@@ -328,7 +328,7 @@ export default function EmployeesPage() {
           </TableBody>
         </Table>
       </div>
-      )
+      
       <div className="flex justify-between items-center text-sm text-muted-foreground">
         <div>Total: {total} empleados</div>
         <div className="flex items-center gap-2">

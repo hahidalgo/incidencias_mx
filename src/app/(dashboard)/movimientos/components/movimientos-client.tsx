@@ -13,6 +13,7 @@ import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { MovementModal } from "./movement-modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/registry/new-york-v4/ui/select';
+import { canAccess, roleRules } from '@/lib/roleUtils';
 
 // Definir un tipo para la respuesta de la API mejora la seguridad de tipos y el autocompletado.
 export interface Movement {
@@ -32,6 +33,13 @@ export interface Movement {
     incidenceObservation: string;
 }
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    userRol: string;
+}
+
 const PAGE_SIZE = 10;
 
 export const MovimientosClient = () => {
@@ -47,8 +55,9 @@ export const MovimientosClient = () => {
     const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
     const [periods, setPeriods] = useState<any[]>([]);
     const [selectedPeriod, setSelectedPeriod] = useState<string>('all');
-    const [offices, setOffices] = useState<{id: string, officeName: string}[]>([]);
+    const [offices, setOffices] = useState<{ id: string, officeName: string }[]>([]);
     const [selectedOffice, setSelectedOffice] = useState<string>('all');
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -83,8 +92,9 @@ export const MovimientosClient = () => {
                             setSelectedPeriod(data.id);
                         }
                     }
-                } catch (e) {
+                } catch (e: any) {
                     // Si falla, simplemente deja "all"
+                    console.error("Error al obtener el periodo actual:", e.message);
                 }
             };
             fetchCurrentPeriod();
@@ -96,15 +106,16 @@ export const MovimientosClient = () => {
         const fetchOffices = async () => {
             try {
                 const res = await fetch('/api/user/offices', {
-                  headers: {
-                    // Aquí deberías pasar el token o userId si tu backend lo requiere
-                  }
+                    headers: {
+                        // Aquí deberías pasar el token o userId si tu backend lo requiere
+                    }
                 });
                 if (!res.ok) throw new Error('No se pudieron obtener las oficinas.');
                 const data = await res.json();
                 setOffices(data || []);
             } catch (e: any) {
-                toast.error(e.message);
+                console.error("Error al obtener las oficinas:", e.message);
+                //toast.error(e.message);
             }
         };
         fetchOffices();
@@ -171,7 +182,7 @@ export const MovimientosClient = () => {
     };
 
     const columns = useMemo(() => getColumns(handleEdit), [movements]);
-
+    console.log(user);
     return (
         <>
             <MovementModal
@@ -196,15 +207,16 @@ export const MovimientosClient = () => {
                         className="max-w-sm"
                     />
                     {/* Select de oficinas asignadas */}
-                    <Select value={selectedOffice} onValueChange={value => { setSelectedOffice(value); setPage(1); }}>
-                        <SelectTrigger className="w-60"><SelectValue placeholder="Filtrar por oficina" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas las oficinas</SelectItem>
-                            {offices.map(o => (
-                                <SelectItem key={o.id} value={o.id}>{o.officeName}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {/* */} {canAccess(user?.userRol, 'movement', 'filterOffice') && 
+                        <Select value={selectedOffice} onValueChange={value => { setSelectedOffice(value); setPage(1); }}>
+                            <SelectTrigger className="w-60"><SelectValue placeholder="Filtrar por oficina" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas las oficinas</SelectItem>
+                                {offices.map(o => (
+                                    <SelectItem key={o.id} value={o.id}>{o.officeName}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select> } 
                     {/* Select de periodos activos */}
                     <Select value={selectedPeriod} onValueChange={value => { setSelectedPeriod(value); setPage(1); }}>
                         <SelectTrigger className="w-105"><SelectValue placeholder="Filtrar por periodo" /></SelectTrigger>
@@ -222,7 +234,7 @@ export const MovimientosClient = () => {
                 </div>
             </div>
             <Separator />
-            
+
             <DataTable columns={columns} data={formattedData} loading={loading} />
             <div className="flex justify-between items-center pt-4 text-sm text-muted-foreground">
                 <div className="flex-1">
