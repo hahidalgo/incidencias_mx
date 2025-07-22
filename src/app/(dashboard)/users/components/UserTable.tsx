@@ -26,9 +26,9 @@ interface UserTableProps {
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: 'Super Administrador',
-  SUPERVISOR_REGIONES: 'Supervisor Regional',
-  ENCARGADO_CASINO: 'Encargado de casino',
-  ENCARGADO_RRHH: 'Encargado de RRHH',
+  SUPERVISOR_REGIONES: 'Gerente de Zona',
+  ENCARGADO_CASINO: 'RRHH Playcity',
+  ENCARGADO_RRHH: 'Administrador de Personal',
 };
 
 const STATUS_LABELS: Record<string, string> = {

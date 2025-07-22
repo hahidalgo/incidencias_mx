@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
-import { Input } from '@/registry/new-york-v4/ui/input';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -39,6 +39,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/registry/new-york-v4/ui/select';
+import { ca } from 'date-fns/locale';
+import { canAccess, roleRules } from '@/lib/roleUtils';
 
 interface Employee {
   id: string;
@@ -61,6 +63,14 @@ interface EmployeeForm {
   employee_name: string;
   employee_type: 'SIND' | 'CONF';
   employee_status: string
+}
+
+// Definir la interfaz User para evitar el error de tipo
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  userRol: string;
 }
 
 const initialForm: EmployeeForm = { office_id: '', employee_code: '', employee_name: '', employee_type: 'SIND', employee_status: 'ACTIVE' };
@@ -89,6 +99,8 @@ export default function EmployeesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [selectedOffice, setSelectedOffice] = useState('all'); // Valor inicial 'all'
+
+  const [user, setUser] = useState<User | null>(null);
 
   // Debounce search input
   useEffect(() => {
@@ -258,18 +270,21 @@ export default function EmployeesPage() {
         <div className="ml-auto flex items-center gap-2">
           <Input placeholder="Buscar empleado..." value={search} onChange={handleSearch} className="w-64" />
           {/* Select para filtrar por oficina */}
+          {canAccess(user?.userRol, 'employees', 'view') && 
           <Select value={selectedOffice} onValueChange={value => { setSelectedOffice(value); setPage(1); }}>
             <SelectTrigger className="w-56"><SelectValue placeholder="Filtrar por oficina" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las oficinas</SelectItem>
               {offices.map(o => <SelectItem key={o.id} value={o.id}>{o.officeName}</SelectItem>)}
             </SelectContent>
-          </Select>
+          </Select>}
+          {canAccess(user?.userRol, 'employees', 'create') &&
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
-          </Button>
+          </Button> }
         </div>
       </div>
+      
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -305,7 +320,7 @@ export default function EmployeesPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => openEdit(employee)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { setDeleteId(employee.id); setConfirmDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    {canAccess(user?.userRol, 'employees', 'delete') &&  <Button variant="ghost" size="icon" onClick={() => { setDeleteId(employee.id); setConfirmDeleteOpen(true); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                   </TableCell>
                 </TableRow>
               ))
@@ -313,6 +328,7 @@ export default function EmployeesPage() {
           </TableBody>
         </Table>
       </div>
+      
       <div className="flex justify-between items-center text-sm text-muted-foreground">
         <div>Total: {total} empleados</div>
         <div className="flex items-center gap-2">
@@ -360,10 +376,10 @@ export default function EmployeesPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={actionLoading}>
+              {canAccess(user?.userRol, 'employees', isEdit ? 'edit' : 'create') && <Button type="submit" disabled={actionLoading}>
                 {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEdit ? 'Guardar Cambios' : 'Crear Empleado'}
-              </Button>
+              </Button>}
             </DialogFooter>
           </form>
         </DialogContent>
