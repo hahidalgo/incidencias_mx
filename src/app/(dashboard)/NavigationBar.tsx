@@ -58,7 +58,7 @@ const NavigationBar = () => {
                     <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={177} height={60} />
                 </Link>
                 <span className="text-lg text-[#0047BA] font-medium py-4 px-3">
-                    Portal de <span className="font-bold text-[#0047BA]">Gestión de Cultura y Desarrollo</span>
+                    <span className="font-bold text-[#0047BA]">Gestión de Cultura y Desarrollo</span>
                     <span className="text-gray-400">  |  </span>
                     {currentPeriod ? (
                         <span className="inline-flex items-center gap-1">
