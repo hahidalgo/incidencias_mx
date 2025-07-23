@@ -57,13 +57,13 @@ const NavigationBar = () => {
                 <Link href="/dashboard" className="flex items-center">
                     <Image src="/images/ollamani-logo.png" alt="Ollamani Grupo" width={177} height={60} />
                 </Link>
-                <span className="text-lg text-[#0E2655] font-medium py-4 px-3">
-                    Portal de <span className="font-bold text-[#0E2655]">Recursos Humanos</span>
+                <span className="text-lg text-[#0047BA] font-medium py-4 px-3">
+                    Portal de <span className="font-bold text-[#0047BA]">Gestión de Cultura y Desarrollo</span>
                     <span className="text-gray-400">  |  </span>
                     {currentPeriod ? (
                         <span className="inline-flex items-center gap-1">
                             <CalendarIcon className="w-4 h-4 inline-block text-blue-900" />
-                            <span className="text-[#0E2655] font-semibold">{currentPeriod.periodName}</span>
+                            <span className="text-[#0047BA] font-semibold">{currentPeriod.periodName}</span>
                             <span className="text-gray-400 text-xs ml-2">({new Date(currentPeriod.periodStart).toLocaleDateString()} - {new Date(currentPeriod.periodEnd).toLocaleDateString()})</span>
                         </span>
                     ) : (
@@ -72,7 +72,7 @@ const NavigationBar = () => {
                 </span>
             </div>
             <div className="flex items-center gap-6 text-gray-400">
-                <span className="text-gray-500 text-sm">Hola <span className="font-bold text-[#0E2655]">{user ? user.userName : '...'}</span></span>
+                <span className="text-gray-500 text-sm">Hola <span className="font-bold text-[#0047BA]">{user ? user.userName : '...'}</span></span>
                 <Link href="/dashboard" className="flex items-center"><HouseIcon className="w-5 h-5" /></Link>
                 
                 
