@@ -97,12 +97,12 @@ export default function DashboardPage() {
 
         {/* Novedades */}
         <section className="mb-8">
-          <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
+          <h2 className="flex items-center gap-2 text-[#0047BA] text-base font-semibold mb-4">
             <AlarmClockIcon className="w-6 h-6" />
             Novedades
           </h2>
           <div className="flex gap-6">
-            <div className="bg-[#0e2655] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
+            <div className="bg-[#0047BA] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
               <Megaphone className="w-12 h-12" />
               <span className="text-2xl font-bold">{incidenciasCount !== null ? incidenciasCount : '...'}</span>
               <span className="text-base font-medium mt-1">Nuevas incidencias</span>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
 
         {/* Registra */}
         <section className="mb-8 bg-white rounded-xl shadow-md px-8 py-6" >
-          <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
+          <h2 className="flex items-center gap-2 text-[#0047BA] text-base font-semibold mb-4">
             <PenToolIcon className="w-6 h-6" />
             Incidencias
           </h2>
@@ -152,7 +152,7 @@ function CardButton({ icon, label, source }: CardButtonProps) {
       <div className="mb-2">
         {SelectedIcon}
       </div>
-      <span className="text-gray-500 text-base group-hover:text-[#0e2655]">{label}</span>
+      <span className="text-gray-500 text-base group-hover:text-[#0047BA]">{label}</span>
     </button>
   );
 }
