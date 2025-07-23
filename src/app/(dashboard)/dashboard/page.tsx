@@ -93,10 +93,10 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#fbfafe]">
       {/* Header */}
-      <main className="max-w-5xl mx-auto py-8 px-4">
+      <main className="mx-auto py-8">
 
         {/* Novedades */}
-        <section className="mb-8">
+        <section className="mb-8 px-8">
           <h2 className="flex items-center gap-2 text-[#0047BA] text-base font-semibold mb-4">
             <AlarmClockIcon className="w-6 h-6" />
             Novedades
@@ -111,12 +111,12 @@ export default function DashboardPage() {
         </section>
 
         {/* Registra */}
-        <section className="mb-8 bg-white rounded-xl shadow-md px-8 py-6" >
+        <section className="mb-8 bg-white px-8 py-6" >
           <h2 className="flex items-center gap-2 text-[#0047BA] text-base font-semibold mb-4">
             <PenToolIcon className="w-6 h-6" />
             Incidencias
           </h2>
-          <div className="flex justify-around  text-[#f39200]">
+          <div className="flex justify-normal gap-6    text-[#f39200]">
             {canAccessButton('incidencias') && <CardButton icon={"incidencias"} label="Incidencias" source="/movimientos" />}
             {canAccessButton('datos') && <CardButton icon={"datos"} label="Revisión" source="/review" />}
             {canAccessButton('reportes') && <CardButton icon={"reportes"} label="Generar cvs" source="/generate-disk" />}
