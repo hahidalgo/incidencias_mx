@@ -9,7 +9,6 @@ import {
   FileSearchIcon,
   Megaphone,
   PenToolIcon,
-  SearchIcon,
   TentTree,
   WalletCardsIcon,
 } from "lucide-react";
@@ -49,6 +48,7 @@ const icons = {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [incidenciasCount, setIncidenciasCount] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -70,6 +70,54 @@ export default function DashboardPage() {
     };
     checkSession();
   }, [router]);
+
+  useEffect(() => {
+    const fetchIncidenciasCount = async () => {
+      try {
+        // Obtener periodo actual
+        const periodRes = await fetch(
+          "http://localhost:3022/api/v1/periods/current",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          }
+        );
+        console.log("periodRes", periodRes);
+
+        if (!periodRes.ok) {
+          setIncidenciasCount(0);
+
+          return;
+        }
+
+        const respuestaPeriodo = await periodRes.json();
+        // Contar movimientos activos de ese periodo
+        const movRes = await fetch(
+          `http://localhost:3022/api/v1/periods/filter/${respuestaPeriodo.period_name}/movements`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          }
+        );
+        if (!movRes.ok) {
+          setIncidenciasCount(0);
+
+          return;
+        }
+        const movData = await movRes.json();
+        setIncidenciasCount(movData.total || 0);
+      } catch {
+        setIncidenciasCount(0);
+      }
+    };
+    fetchIncidenciasCount();
+  }, []);
 
   if (!user) {
     return (
@@ -94,7 +142,9 @@ export default function DashboardPage() {
           <div className="flex gap-6">
             <div className="bg-[#0e2655] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
               <Megaphone className="w-12 h-12" />
-              <span className="text-2xl font-bold">02</span>
+              <span className="text-2xl font-bold">
+                {incidenciasCount !== null ? incidenciasCount : "..."}
+              </span>
               <span className="text-base font-medium mt-1">
                 Nuevas incidencias
               </span>
@@ -106,30 +156,20 @@ export default function DashboardPage() {
         <section className="mb-8 bg-white rounded-xl shadow-md px-8 py-6">
           <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
             <PenToolIcon className="w-6 h-6" />
-            Registra
+            Incidencias
           </h2>
-          <div className="flex gap-6 flex-wrap  text-[#f39200]">
+          <div className="flex justify-around  text-[#f39200]">
             <CardButton
               icon={"incidencias"}
               label="Incidencias"
               source="/movimientos"
             />
-            <CardButton icon={"vacaciones"} label="Vacaciones" />
-            <CardButton icon={"tiempolibre"} label="Tiempo Libre" />
-          </div>
-        </section>
-
-        {/* Consulta */}
-        <section className="mb-8">
-          <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
-            <SearchIcon className="w-6 h-6" />
-            Consulta
-          </h2>
-          <div className="flex gap-6 flex-wrap">
-            <CardButton icon={"reportes"} label="Reportes" />
-            <CardButton icon={"datos"} label="Datos Maestros" />
-            <CardButton icon={"comunicados"} label="Comunicados" />
-            <CardButton icon={"nomina"} label="Recibos de Nómina" />
+            <CardButton icon={"datos"} label="Revisión" source="/review" />
+            <CardButton
+              icon={"reportes"}
+              label="Generar cvs"
+              source="/generate-disk"
+            />
           </div>
         </section>
       </main>

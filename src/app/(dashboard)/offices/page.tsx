@@ -45,10 +45,10 @@ import {
 
 interface Office {
   id: string;
-  company_id: string;
-  office_name: string;
-  office_status: number;
+  companyId: string;
   company_name: string;
+  office_status: string;
+  office_name: string;
 }
 
 interface Company {
@@ -57,17 +57,17 @@ interface Company {
 }
 
 interface OfficeForm {
-  company_id: string;
+  companyId: string;
   office_name: string;
   office_status: number;
 }
 
 const initialForm: OfficeForm = {
-  company_id: "",
+  companyId: "",
   office_name: "",
   office_status: 1,
 };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function OfficesPage() {
   const [offices, setOffices] = useState<Office[]>([]);
@@ -149,7 +149,8 @@ export default function OfficesPage() {
         ); // Fetch all companies
         if (!res.ok) throw new Error("No se pudieron obtener las empresas.");
         const data = await res.json();
-        const companyData = data.companies || [];
+        const companyData = data.data || [];
+        console.log("companyData", companyData);
         setCompanies(companyData);
         setCompanyMap(
           new Map(companyData.map((c: Company) => [c.id, c.company_name]))
@@ -177,9 +178,9 @@ export default function OfficesPage() {
     setIsEdit(true);
     setCurrentOffice(office);
     setForm({
-      company_id: office.company_id,
+      companyId: office.companyId,
       office_name: office.office_name,
-      office_status: office.office_status,
+      office_status: Number(office.office_status),
     });
     setIsModalOpen(true);
   };
@@ -202,7 +203,19 @@ export default function OfficesPage() {
     try {
       const method = isEdit ? "PUT" : "POST";
       const url = "http://localhost:3022/api/v1/offices";
-      const body = isEdit ? { ...form, id: currentOffice?.id } : form;
+      // Transformar los campos a snake_case como espera el backend
+      const body = isEdit
+        ? {
+            id: currentOffice?.id,
+            company_id: form.companyId,
+            office_name: form.office_name,
+            office_status: Number(form.office_status),
+          }
+        : {
+            company_id: form.companyId,
+            office_name: form.office_name,
+            office_status: Number(form.office_status),
+          };
 
       const res = await fetch("http://localhost:3022/api/v1/offices", {
         method,
@@ -274,7 +287,6 @@ export default function OfficesPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-blue-950 text-white hover:bg-blue-800">
-              <TableHead className="w-24 text-white">ID</TableHead>
               <TableHead className="text-white">Nombre</TableHead>
               <TableHead className="text-white">Empresa</TableHead>
               <TableHead className="w-32 text-white">Status</TableHead>
@@ -299,20 +311,21 @@ export default function OfficesPage() {
             ) : (
               offices.map((office) => (
                 <TableRow key={office.id}>
-                  <TableCell className="font-mono text-xs">
-                    {office.id.slice(0, 8)}
-                  </TableCell>
                   <TableCell className="font-medium">
-                    {office.office_name}
+                    {office.company_name}
                   </TableCell>
-                  <TableCell>{office.company_name || "N/A"}</TableCell>
+                  <TableCell>{office.office_name || "N/A"}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
-                        office.office_status === 1 ? "default" : "destructive"
+                        Number(office.office_status) === 1
+                          ? "default"
+                          : "destructive"
                       }
                     >
-                      {office.office_status === 1 ? "Activo" : "Inactivo"}
+                      {Number(office.office_status) === 1
+                        ? "Activo"
+                        : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -376,15 +389,15 @@ export default function OfficesPage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="company_id" className="text-right">
+                <Label htmlFor="companyId" className="text-right">
                   Empresa
                 </Label>
                 <Select
                   required
                   onValueChange={(value) =>
-                    handleSelectChange("company_id", value)
+                    handleSelectChange("companyId", value)
                   }
-                  value={form.company_id}
+                  value={form.companyId}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecciona una empresa" />
@@ -399,12 +412,12 @@ export default function OfficesPage() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="office_name" className="text-right">
+                <Label htmlFor="officeName" className="text-right">
                   Nombre
                 </Label>
                 <Input
-                  id="office_name"
-                  name="office_name"
+                  id="officeName"
+                  name="officeName"
                   value={form.office_name}
                   onChange={handleFormChange}
                   required
@@ -417,7 +430,7 @@ export default function OfficesPage() {
                 </Label>
                 <Select
                   onValueChange={(value) =>
-                    handleSelectChange("office_status", Number(value))
+                    handleSelectChange("office_status", value)
                   }
                   value={String(form.office_status)}
                 >

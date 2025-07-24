@@ -56,7 +56,7 @@ interface CompanyForm {
 }
 
 const initialForm: CompanyForm = { company_name: "", company_status: 1 };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -268,10 +268,14 @@ export default function CompaniesPage() {
                   <TableCell>
                     <Badge
                       variant={
-                        company.company_status === 1 ? "default" : "destructive"
+                        Number(company.company_status) === 1
+                          ? "default"
+                          : "destructive"
                       }
                     >
-                      {company.company_status === 1 ? "Activo" : "Inactivo"}
+                      {Number(company.company_status) === 1
+                        ? "Activo"
+                        : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import getCookie from "@/lib/getToken";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -17,18 +16,19 @@ import { MovementModal } from "./movement-modal";
 // Definir un tipo para la respuesta de la API mejora la seguridad de tipos y el autocompletado.
 export interface Movement {
   id: string;
-  employee_code: number;
-  incident_code: string;
   employee: {
     id: string;
+    employee_code: number;
     employee_type: string;
     employee_name: string;
   };
   incident: {
     id: string;
+    incident_code: string;
     incident_name: string;
   };
   incidence_date: string;
+  incidenceObservation: string;
 }
 
 const PAGE_SIZE = 10;
@@ -79,18 +79,26 @@ export const MovimientosClient = () => {
       const total = respuesta.total;
       const totalPages = respuesta.totalPages;
       setMovements(movements);
-
       const formattedMovements: MovementColumn[] = movements.map(
-        (item: Movement) => ({
+        (item: any) => ({
           id: item.id,
-          employeeCode: item.employee_code,
-          employeeType: item.employee.employee_type,
-          employeeName: item.employee.employee_name,
-          incidentCode: item.incident_code,
-          incidentName: item.incident.incident_name,
-          date: format(new Date(item.incidence_date), "d 'de' MMMM 'de' yyyy", {
-            locale: es,
-          }),
+          employeeCode: item.employee.employeeCode ?? item.employee_code,
+          employeeType:
+            item.employee.employeeType ?? item.employee.employee_type,
+          employeeName:
+            item.employee.employeeName ?? item.employee.employee_name,
+          incidentCode: item.incident.incidentCode ?? item.incident_code,
+          incidentName:
+            item.incident.incidentName ?? item.incident.incident_name,
+          date: item.incidence_date
+            ? (() => {
+                try {
+                  return format(new Date(item.incidence_date), "dd/MM/yyyy");
+                } catch {
+                  return "Sin fecha";
+                }
+              })()
+            : "Sin fecha",
         })
       );
 

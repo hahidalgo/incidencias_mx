@@ -59,7 +59,7 @@ const initialForm: IncidentForm = {
   incident_name: "",
   incident_status: 1,
 };
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 export default function IncidentsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -140,7 +140,7 @@ export default function IncidentsPage() {
     setForm({
       incident_code: incident.incident_code,
       incident_name: incident.incident_name,
-      incident_status: incident.incident_status,
+      incident_status: Number(incident.incident_status),
     });
     setIsModalOpen(true);
   };
@@ -162,7 +162,19 @@ export default function IncidentsPage() {
     setActionLoading(true);
     try {
       const method = isEdit ? "PUT" : "POST";
-      const body = isEdit ? { ...form, id: currentIncident?.id } : form;
+      // Transformar los campos a snake_case como espera el backend
+      const body = isEdit
+        ? {
+            id: currentIncident?.id,
+            incident_code: form.incident_code,
+            incident_name: form.incident_name,
+            incident_status: Number(form.incident_status),
+          }
+        : {
+            incident_code: form.incident_code,
+            incident_name: form.incident_name,
+            incident_status: Number(form.incident_status),
+          };
 
       const res = await fetch("http://localhost:3022/api/v1/incidents", {
         method,
@@ -270,12 +282,14 @@ export default function IncidentsPage() {
                   <TableCell>
                     <Badge
                       variant={
-                        incident.incident_status === 1
+                        Number(incident.incident_status) === 1
                           ? "default"
                           : "destructive"
                       }
                     >
-                      {incident.incident_status === 1 ? "Activo" : "Inactivo"}
+                      {Number(incident.incident_status) === 1
+                        ? "Activo"
+                        : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -369,7 +383,7 @@ export default function IncidentsPage() {
                 </Label>
                 <Select
                   onValueChange={(value) =>
-                    handleSelectChange("incident_status", Number(value))
+                    handleSelectChange("incident_status", value)
                   }
                   value={String(form.incident_status)}
                 >

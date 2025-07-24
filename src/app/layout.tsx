@@ -17,7 +17,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-    title: 'Sistema de Incidencias MX',
+    title: 'Gestion de Incidencias - Grupo Ollamani',
     description: 'Sistema moderno para la gestión de incidencias'
 };
 

@@ -48,12 +48,15 @@ interface Employee {
   id: string;
   employee_name: string;
   employee_code: number;
+  employee_type: string;
+  employee_sunday_bonus: number;
 }
 
 interface Incident {
   id: string;
   incident_name: string;
   incident_code: string;
+  incidence_date: string;
 }
 
 interface MovementModalProps {
@@ -89,6 +92,8 @@ export const MovementModal: React.FC<MovementModalProps> = ({
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
   const [incidentPopoverOpen, setIncidentPopoverOpen] = useState(false);
+  const [currentPeriod, setCurrentPeriod] = useState<any>(null); // Estado para el periodo actual
+  const [alertMessage, setAlertMessage] = useState<string | null>(null); // Estado para el mensaje de alerta
 
   const title = initialData ? "Editar Movimiento" : "Crear Movimiento";
   const action = initialData ? "Guardar cambios" : "Crear";
@@ -101,9 +106,9 @@ export const MovementModal: React.FC<MovementModalProps> = ({
     if (initialData) {
       form.reset({
         employeeId: initialData.employee.id,
-        incidentId: initialData.incident.id,
+        incidentId: initialData.id,
         incidenceDate: new Date(initialData.incidence_date),
-        incidenceObservation: initialData.incidence_observation || "",
+        incidenceObservation: initialData?.incidenceObservation || "",
       });
     } else {
       form.reset({

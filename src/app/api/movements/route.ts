@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/prisma/client";
 import { z } from 'zod';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import jwt from 'jsonwebtoken';
 
 // Esquema de validación para la creación y actualización de movimientos.
 // Usamos `z.coerce.date()` para convertir el string de fecha que llega en el JSON a un objeto Date.
@@ -12,6 +13,103 @@ const movementSchema = z.object({
     incidence_date: z.coerce.date({ message: "La fecha de incidencia es inválida." }),
     incidence_observation: z.string().optional(),
 });
+
+
+
+/**
+ * Valida que todos los registros relacionados existan y estén activos
+ */
+async function validateRelatedRecords(periodId: string, employeeId: string, incidentId: string) {
+    const [period, employee, incident] = await Promise.all([
+        prisma.period.findUnique({
+            where: { id: periodId },
+            select: { id: true, periodStart: true, periodEnd: true, periodStatus: true }
+        }),
+        prisma.employee.findUnique({
+            where: { id: employeeId },
+            select: { id: true, employeeStatus: true }
+        }),
+        prisma.incident.findUnique({
+            where: { id: incidentId },
+            select: { id: true, incidentStatus: true }
+        })
+    ]);
+
+    if (!period) {
+        throw new Error("El período especificado no existe.");
+    }
+
+    if (period.periodStatus !== 'ACTIVE') {
+        throw new Error("El período especificado no está activo.");
+    }
+
+    if (!employee) {
+        throw new Error("El empleado especificado no existe.");
+    }
+
+    if (employee.employeeStatus !== 'ACTIVE') {
+        throw new Error("El empleado especificado no está activo.");
+    }
+
+    if (!incident) {
+        throw new Error("La incidencia especificada no existe.");
+    }
+
+    if (incident.incidentStatus !== 'ACTIVE') {
+        throw new Error("La incidencia especificada no está activa.");
+    }
+
+    return { period, employee, incident };
+}
+
+/**
+ * Valida que la fecha de incidencia esté dentro del rango del período
+ */
+function validateIncidenceDate(incidenceDate: Date, periodStart: Date, periodEnd: Date) {
+    if (incidenceDate < periodStart || incidenceDate > periodEnd) {
+        throw new Error("La fecha de incidencia debe estar dentro del rango del período seleccionado.");
+    }
+}
+
+/**
+ * Verifica si ya existe un movimiento duplicado para el mismo empleado, incidencia y período
+ */
+async function checkDuplicateMovement(periodId: string, employeeId: string, incidentId: string, excludeId?: string) {
+    const whereClause: any = {
+        periodId,
+        employeeId,
+        incidentId,
+        incidenceStatus: 'ACTIVE'
+    };
+
+    if (excludeId) {
+        whereClause.id = { not: excludeId };
+    }
+
+    const existingMovement = await prisma.movement.findFirst({
+        where: whereClause
+    });
+
+    if (existingMovement) {
+        throw new Error("Ya existe un movimiento activo para este empleado, incidencia y período.");
+    }
+}
+
+/**
+ * Obtiene las oficinas del usuario logueado
+ */
+async function getUserOffices(userId: string) {
+    const userOffices = await prisma.userOffice.findMany({
+        where: { userId },
+        include: {
+            office: {
+                select: { id: true, officeName: true }
+            }
+        }
+    });
+    
+    return userOffices.map(uo => uo.office.id);
+}
 
 /**
  * Maneja los errores de la API de forma centralizada.
@@ -39,6 +137,14 @@ function handleApiError(error: unknown, context: string): NextResponse {
         }
     }
 
+    // Manejar errores de validación personalizados
+    if (error instanceof Error) {
+        return NextResponse.json(
+            { message: error.message },
+            { status: 400 }
+        );
+    }
+
     return NextResponse.json(
         { message: "Error interno del servidor." },
         { status: 500 }
@@ -47,34 +153,103 @@ function handleApiError(error: unknown, context: string): NextResponse {
 
 /**
  * GET: Obtiene una lista paginada y filtrable de movimientos de incidencias.
+ * Solo devuelve movimientos de empleados que pertenezcan a las oficinas del usuario logueado.
  * @param request - La solicitud Next.js.
  * @returns Una respuesta JSON con la lista de movimientos, el total y el número de páginas.
  */
 export async function GET(request: NextRequest) {
     try {
+        // Obtener el token del usuario logueado
+        const token = request.cookies.get('token')?.value;
+        if (!token) {
+            return NextResponse.json(
+                { message: "No autenticado" },
+                { status: 401 }
+            );
+        }
+
+        // Verificar el token y obtener el ID del usuario
+        const payload = jwt.verify(token, process.env.JWT_SECRET!) as { id?: string, userEmail?: string };
+        if (!payload.id && !payload.userEmail) {
+            return NextResponse.json(
+                { message: "Token inválido" },
+                { status: 401 }
+            );
+        }
+
+        // Obtener el usuario y sus oficinas
+        let user = null;
+        if (payload.id) {
+            user = await prisma.user.findUnique({
+                where: { id: payload.id },
+                select: { id: true, userRol: true }
+            });
+        } else {
+            user = await prisma.user.findUnique({
+                where: { userEmail: payload.userEmail! },
+                select: { id: true, userRol: true }
+            });
+        }
+
+        if (!user) {
+            return NextResponse.json(
+                { message: "Usuario no encontrado" },
+                { status: 404 }
+            );
+        }
+
+        // Si es SUPER_ADMIN, puede ver todos los movimientos
+        let userOfficeIds: string[] = [];
+        if (user.userRol !== 'SUPER_ADMIN') {
+            userOfficeIds = await getUserOffices(user.id);
+            if (userOfficeIds.length === 0) {
+                return NextResponse.json(
+                    { message: "No tienes oficinas asignadas" },
+                    { status: 403 }
+                );
+            }
+        }
+
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get("page") || "1", 10);
         const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
         const search = searchParams.get("search") || "";
+        const periodId = searchParams.get("periodId");
 
         const skip = (page - 1) * pageSize;
 
-        const where = search
+        let where: any = search
             ? {
                 OR: [
                     {
-                        employee: { // Búsqueda en el nombre del empleado relacionado
-                            employeeName: { contains: search, mode: "insensitive" },
+                        employee: {
+                            is: { employeeName: { contains: search, mode: 'insensitive' as const } }
                         }
                     },
                     {
-                        incident: { // Búsqueda en el nombre de la incidencia relacionada
-                            incidentName: { contains: search, mode: "insensitive" },
+                        incident: {
+                            is: { incidentName: { contains: search, mode: 'insensitive' as const } }
                         }
                     },
                 ],
             }
             : {};
+
+        // Filtrar por período si se especifica
+        if (periodId) {
+            where = { ...where, periodId };
+        }
+
+        // Filtrar por oficinas del usuario (excepto para SUPER_ADMIN)
+        if (user.userRol !== 'SUPER_ADMIN') {
+            where = {
+                ...where,
+                employee: {
+                    ...where.employee,
+                    officeId: { in: userOfficeIds }
+                }
+            };
+        }
 
         const [movements, total] = await prisma.$transaction([
             prisma.movement.findMany({
@@ -82,7 +257,13 @@ export async function GET(request: NextRequest) {
                 skip,
                 take: pageSize,
                 include: {
-                    employee: true,
+                    employee: {
+                        include: {
+                            office: {
+                                select: { id: true, officeName: true }
+                            }
+                        }
+                    },
                     incident: true,
                 },
                 orderBy: {
@@ -112,6 +293,15 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
 
+        // Validar registros relacionados
+        const { period } = await validateRelatedRecords(period_id, employee_id, incident_id);
+
+        // Validar fecha de incidencia
+        validateIncidenceDate(incidence_date, period.periodStart, period.periodEnd);
+
+        // Verificar duplicados
+        await checkDuplicateMovement(period_id, employee_id, incident_id);
+
         const movement = await prisma.movement.create({
             data: {
                 periodId: period_id,
@@ -120,6 +310,11 @@ export async function POST(request: NextRequest) {
                 incidenceDate: incidence_date,
                 incidenceObservation: incidence_observation || '',
                 incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
+            },
+            include: {
+                employee: true,
+                incident: true,
+                period: true,
             },
         });
 
@@ -145,8 +340,30 @@ export async function PUT(request: NextRequest) {
             );
         }
 
+        // Verificar que el movimiento existe
+        const existingMovement = await prisma.movement.findUnique({
+            where: { id },
+            select: { id: true, incidenceStatus: true }
+        });
+
+        if (!existingMovement) {
+            return NextResponse.json(
+                { message: "El movimiento especificado no existe." },
+                { status: 404 }
+            );
+        }
+
         const body = await request.json();
         const { period_id, employee_id, incident_id, incidence_date, incidence_observation } = movementSchema.parse(body);
+
+        // Validar registros relacionados
+        const { period } = await validateRelatedRecords(period_id, employee_id, incident_id);
+
+        // Validar fecha de incidencia
+        validateIncidenceDate(incidence_date, period.periodStart, period.periodEnd);
+
+        // Verificar duplicados (excluyendo el movimiento actual)
+        await checkDuplicateMovement(period_id, employee_id, incident_id, id);
 
         const movement = await prisma.movement.update({
             where: { id },
@@ -157,6 +374,11 @@ export async function PUT(request: NextRequest) {
                 incidenceDate: incidence_date,
                 incidenceObservation: incidence_observation || '',
                 incidenceStatus: 'ACTIVE', // Usar el enum definido en Prisma
+            },
+            include: {
+                employee: true,
+                incident: true,
+                period: true,
             },
         });
 

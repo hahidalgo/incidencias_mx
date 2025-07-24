@@ -48,6 +48,7 @@ interface Employee {
   employee_name: string;
   employee_type: "SIND" | "CONF";
   employee_status: number;
+  office_name?: string | null; // Campo opcional para el nombre de la oficina
 }
 
 interface Office {
@@ -94,6 +95,7 @@ export default function EmployeesPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [selectedOffice, setSelectedOffice] = useState("all"); // Valor inicial 'all'
 
   // Debounce search input
   useEffect(() => {
@@ -130,7 +132,7 @@ export default function EmployeesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, selectedOffice]); // Agregar selectedOffice como dependencia
 
   useEffect(() => {
     fetchEmployees();
@@ -183,7 +185,7 @@ export default function EmployeesPage() {
       employee_code: String(employee.employee_code),
       employee_name: employee.employee_name,
       employee_type: employee.employee_type,
-      employee_status: employee.employee_status,
+      employee_status: Number(employee.employee_status),
     });
     setIsModalOpen(true);
   };
@@ -205,11 +207,23 @@ export default function EmployeesPage() {
     setActionLoading(true);
     try {
       const method = isEdit ? "PUT" : "POST";
-      const body = {
-        ...form,
-        id: isEdit ? currentEmployee?.id : undefined,
-        employee_code: Number(form.employee_code), // Convertir a número
-      };
+      // Usar camelCase para el body
+      const body = isEdit
+        ? {
+            id: currentEmployee?.id,
+            office_id: form.office_id,
+            employee_code: Number(form.employee_code),
+            employee_name: form.employee_name,
+            employee_type: form.employee_type,
+            employee_status: Number(form.employee_status),
+          }
+        : {
+            office_id: form.office_id,
+            employee_code: Number(form.employee_code),
+            employee_name: form.employee_name,
+            employee_type: form.employee_type,
+            employee_status: Number(form.employee_status),
+          };
 
       const res = await fetch("http://localhost:3022/api/v1/employees", {
         method,
@@ -273,6 +287,26 @@ export default function EmployeesPage() {
             onChange={handleSearch}
             className="w-64"
           />
+          {/* Select para filtrar por oficina */}
+          <Select
+            value={selectedOffice}
+            onValueChange={(value) => {
+              setSelectedOffice(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="Filtrar por oficina" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las oficinas</SelectItem>
+              {offices.map((o) => (
+                <SelectItem key={o.id} value={o.id}>
+                  {o.office_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
           </Button>
@@ -315,7 +349,9 @@ export default function EmployeesPage() {
                     {employee.employee_name}
                   </TableCell>
                   <TableCell>
-                    {officeMap.get(employee.office_id) || "N/A"}
+                    {employee.office_name ??
+                      officeMap.get(employee.office_id) ??
+                      "N/A"}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -331,12 +367,14 @@ export default function EmployeesPage() {
                   <TableCell>
                     <Badge
                       variant={
-                        employee.employee_status === 1
+                        Number(employee.employee_status) === 1
                           ? "default"
                           : "destructive"
                       }
                     >
-                      {employee.employee_status === 1 ? "Activo" : "Inactivo"}
+                      {Number(employee.employee_status) === 1
+                        ? "Activo"
+                        : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -483,7 +521,7 @@ export default function EmployeesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">Activo</SelectItem>
-                    <SelectItem value="0">Inactivo</SelectItem>
+                    <SelectItem value="2">Inactivo</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

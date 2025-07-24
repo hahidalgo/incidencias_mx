@@ -24,9 +24,9 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      experimental: {
-        serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
-      }
+      experimental: {},
+      // https://nextjs.org/docs/app/api-reference/next-config-js/serverExternalPackages
+      serverExternalPackages: ['@prisma/client', 'bcryptjs']
 };
 
 export default withBundleAnalyzer(nextConfig);

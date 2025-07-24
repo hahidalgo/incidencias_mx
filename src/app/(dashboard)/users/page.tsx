@@ -1,8 +1,4 @@
 "use client";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +37,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import getCookie from "@/lib/getToken";
+import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { UserFormData } from "./components/UserFormDialog";
+import { UserTableUser } from "./components/UserTable";
 
 interface User {
   id: string;
@@ -84,34 +86,43 @@ const initialForm: UserForm = {
 const PAGE_SIZE = 7;
 const USER_ROLES = {
   111: "Admininistrador de Sistema",
-  1: "Encargado de Oficina",
-  2: "Supervisor de Oficinas",
-  3: "Encargado de RRHH",
+  1: "Recursos Humanos de PlayCityl",
+  2: "Gerente de zona",
+  3: "Administrador de personal",
 };
 
+interface Company {
+  id: string;
+  companyName: string;
+}
+
+interface Office {
+  id: string;
+  officeName: string;
+  companyId: string;
+}
+
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserTableUser[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [offices, setOffices] = useState<Office[]>([]);
   const [companyMap, setCompanyMap] = useState<Map<string, string>>(new Map());
   const [officeMap, setOfficeMap] = useState<Map<string, string>>(new Map());
-
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserFormData | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [form, setForm] = useState<UserForm>(initialForm);
-
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   useEffect(() => {
@@ -176,18 +187,20 @@ export default function UsersPage() {
 
         if (!companiesRes.ok)
           throw new Error("No se pudieron obtener las empresas.");
-        const { companies: companyList = [] } = await companiesRes.json();
-        setCompanies(companyList);
+        const responseCompanies = await companiesRes.json();
+        const companies = responseCompanies.data;
+        setCompanies(companies);
         setCompanyMap(
-          new Map(companyList.map((c: Company) => [c.id, c.company_name]))
+          new Map(companies.map((c: Company) => [c.id, c.company_name]))
         );
 
         if (!officesRes.ok)
           throw new Error("No se pudieron obtener las oficinas.");
-        const { offices: officeList = [] } = await officesRes.json();
-        setOffices(officeList);
+        const responseOffice = await officesRes.json();
+        const offices = responseOffice.data;
+        setOffices(offices);
         setOfficeMap(
-          new Map(officeList.map((o: Office) => [o.id, o.office_name]))
+          new Map(offices.map((o: Office) => [o.id, o.office_name]))
         );
       } catch (e: any) {
         toast.error(e.message);
@@ -334,33 +347,67 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>{user.user_email}</TableCell>
                   <TableCell>
-                    {companyMap.get(user.company_id) || "N/A"}
+                    {user.user_access.length > 0
+                      ? user.user_access[0].company_name
+                      : "N/A"}
                   </TableCell>
                   <TableCell>
-                    {officeMap.get(user.office_id) || "N/A"}
+                    {user.user_access && user.user_access.length > 0
+                      ? user.user_access.map((access) => access.office_name) ||
+                        "N/A"
+                      : "N/A"}
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={user.user_rol === 1 ? "secondary" : "outline"}
+                      variant={
+                        Number(user.user_rol) === 1 ? "secondary" : "outline"
+                      }
                     >
-                      {USER_ROLES[user.user_rol as keyof typeof USER_ROLES] ||
-                        "N/A"}
+                      {USER_ROLES[
+                        user.user_rol as unknown as keyof typeof USER_ROLES
+                      ] || "N/A"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge
                       variant={
-                        user.user_status === 1 ? "default" : "destructive"
+                        Number(user.user_status) === 1
+                          ? "default"
+                          : "destructive"
                       }
                     >
-                      {user.user_status === 1 ? "Activo" : "Inactivo"}
+                      {Number(user.user_status) === 1 ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => openEdit(user)}
+                      onClick={() =>
+                        openEdit({
+                          id: user.id,
+                          company_id:
+                            user.user_access && user.user_access.length > 0
+                              ? user.user_access[0].company_id
+                              : "",
+                          office_id:
+                            user.user_access && user.user_access.length > 0
+                              ? user.user_access[0].office_id
+                              : "",
+                          user_name: user.user_name,
+                          user_email: user.user_email,
+                          user_status:
+                            typeof user.user_status === "number"
+                              ? user.user_status
+                              : Number(user.user_status) === 1
+                                ? 1
+                                : 0,
+                          user_rol:
+                            typeof user.user_rol === "number"
+                              ? user.user_rol
+                              : Number(user.user_rol),
+                        })
+                      }
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
