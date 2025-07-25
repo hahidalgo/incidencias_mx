@@ -74,3 +74,11 @@ export function canAccess(
   
   return false;
 } 
+
+
+export const ROLE_LABELS: Record<string, string> = {
+  111: "Super Administrador",
+  1: "Recursos Humanos de PlayCityl",
+  2: "Gerente de zona",
+  3: "Administrador de personal",
+};

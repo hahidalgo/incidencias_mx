@@ -1,9 +1,8 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import getCookie from "@/lib/getToken";
 import {
   Table,
   TableBody,
@@ -12,16 +11,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/registry/new-york-v4/ui/table";
+import { Download } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
 interface Period {
   id: string;
-  periodName: string;
-  periodStart: string;
-  periodEnd: string;
-  periodStatus: string;
+  period_name: string;
+  period_start: string;
+  period_end: string;
+  period_status: number;
+  movements_count: number;
 }
 
 export default function GenerateDiskPage() {
@@ -39,20 +41,22 @@ export default function GenerateDiskPage() {
         page: String(page),
         pageSize: String(PAGE_SIZE),
       });
-      const res = await fetch(`/api/periods?${params.toString()}`, { cache: "no-store" });
+
+      const res = await fetch(
+        `http://localhost:3022/api/v1/periods/with-movements?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("token")}`,
+          },
+        }
+      );
       if (!res.ok) throw new Error("No se pudieron obtener los periodos.");
       const data = await res.json();
       setPeriods(data.periods || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
-      // Obtener conteo de movimientos por periodo
-      const countsRes = await fetch(`/api/generate-disk/counts?ids=${data.periods.map((p: Period) => p.id).join(",")}`);
-      if (countsRes.ok) {
-        const countsData = await countsRes.json();
-        setCounts(countsData.counts || {});
-      } else {
-        setCounts({});
-      }
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -66,7 +70,19 @@ export default function GenerateDiskPage() {
 
   const handleDownload = async (periodId: string, periodName: string) => {
     try {
-      const res = await fetch(`/api/generate-disk/download?periodId=${periodId}`);
+      const res = await fetch(
+        `http://localhost:3022/api/v1/periods/generate/csv`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            period: periodName,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("token")}`,
+          },
+        }
+      );
       if (!res.ok) throw new Error("No se pudo generar el archivo");
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -119,12 +135,22 @@ export default function GenerateDiskPage() {
             ) : (
               periods.map((period) => (
                 <TableRow key={period.id}>
-                  <TableCell>{period.periodName}</TableCell>
-                  <TableCell>{new Date(period.periodStart).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(period.periodEnd).toLocaleDateString()}</TableCell>
-                  <TableCell>{counts[period.id] ?? 0}</TableCell>
+                  <TableCell>{period.period_name}</TableCell>
                   <TableCell>
-                    <Button variant="outline" size="icon" onClick={() => handleDownload(period.id,period.periodName)}>
+                    {new Date(period.period_start).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(period.period_end).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>{period.movements_count}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        handleDownload(period.id, period.period_name)
+                      }
+                    >
                       <Download className="w-4 h-4" />
                     </Button>
                   </TableCell>
@@ -139,14 +165,22 @@ export default function GenerateDiskPage() {
           Página {page} de {totalPages} ({total} periodos)
         </span>
         <div className="flex gap-2">
-          <Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
+          <Button
+            variant="outline"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
             Anterior
           </Button>
-          <Button variant="outline" disabled={page === totalPages} onClick={() => setPage(page + 1)}>
+          <Button
+            variant="outline"
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
             Siguiente
           </Button>
         </div>
       </div>
     </div>
   );
-} 
+}
