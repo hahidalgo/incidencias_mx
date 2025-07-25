@@ -70,22 +70,21 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex">
       {/* Columna izquierda: branding */}
-      <div className="hidden md:flex flex-col justify-between items-center w-1/2 bg-[#18306a] relative overflow-hidden">
+      <div className="hidden md:flex flex-col justify-between items-center w-1/2 bg-[#0047BA] relative overflow-hidden">
         {/* Imagen de fondo con overlay azul */}
         <div className="absolute inset-0 z-0">
-          {/*<Image
+          <Image
             src="/images/login-bg.jpg"
             alt="Fondo login"
             fill
-            style={{ objectFit: 'cover', opacity: 0.25 }}
+            style={{ objectFit: 'cover', opacity: 1 }}
             priority
-          /> */}
-          <div className="absolute inset-0 bg-[#18306a] opacity-90" />
+          /> 
+          <div className="absolute inset-0 bg-[#0047BA] opacity-90" />
         </div>
         {/* Logos y personas */}
         <div className="relative z-10 flex flex-col h-full w-full justify-between">
           <div className="flex-1 flex flex-col justify-center items-center gap-8">
-            {/* <Image src="/images/people.png" alt="Personas" width={320} height={320} className="mb-8" /> */}
             <div className="flex flex-wrap justify-center gap-8 ">
               <Image
                 src="/images/playcity.png"
@@ -129,15 +128,9 @@ export default function LoginPage() {
               height={75}
             />
           </div>
-          <h1 className="text-center text-[#18306a] text-lg font-semibold mb-2">
-            Portal Incidencias
-          </h1>
-          <h2 className="text-center text-[#18306a] text-md font-semibold mb-2">
-            Gesti&oacute;n de Cultura y Desarrollo
-          </h2>
-          <h3 className="text-center text-gray-700 text-base font-medium mb-6">
-            Inicio de Sesión
-          </h3>
+          <h1 className="text-center text-[#0047BA] text-lg font-semibold mb-2">Portal Incidencias</h1>
+          <h2 className="text-center text-[#0047BA] text-md font-semibold mb-2">Gesti&oacute;n de Cultura y Desarrollo</h2>
+          <h3 className="text-center text-gray-700 text-base font-medium mb-6">Inicio de Sesión</h3>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {error && (
               <Alert variant="destructive">
@@ -145,18 +138,13 @@ export default function LoginPage() {
               </Alert>
             )}
             <div>
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-[#18306a]"
-              >
-                Usuario *
-              </Label>
+              <Label htmlFor="email" className="text-sm font-medium text-[#0047BA]">Usuario *</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="tu@email.com"
-                {...register("email")}
-                className={`mt-1 h-11 text-base ${errors.email ? "border-red-500 focus:border-red-500" : "border-[#18306a] focus:border-[#18306a]"} focus:ring-[#18306a]`}
+                {...register('email')}
+                className={`mt-1 h-11 text-base ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-[#0047BA] focus:border-[#0047BA]'} focus:ring-[#0047BA]`}
               />
               {errors.email && (
                 <p className="text-xs text-red-500 mt-1">
@@ -165,19 +153,14 @@ export default function LoginPage() {
               )}
             </div>
             <div>
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-[#18306a]"
-              >
-                Contraseña *
-              </Label>
+              <Label htmlFor="password" className="text-sm font-medium text-[#0047BA]">Contraseña *</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  {...register("password")}
-                  className={`mt-1 h-11 text-base pr-12 ${errors.password ? "border-red-500 focus:border-red-500" : "border-[#18306a] focus:border-[#18306a]"} focus:ring-[#18306a]`}
+                  {...register('password')}
+                  className={`mt-1 h-11 text-base pr-12 ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-[#0047BA] focus:border-[#0047BA]'} focus:ring-[#0047BA]`}
                 />
                 <Button
                   type="button"
@@ -202,7 +185,7 @@ export default function LoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full h-11 text-base font-semibold bg-[#18306a] hover:bg-[#142654] text-white rounded-md mt-2"
+              className="w-full h-11 text-base font-semibold bg-[#0047BA] hover:bg-[#142654] text-white rounded-md mt-2"
               disabled={isLoading}
             >
               {isLoading ? (

@@ -43,6 +43,7 @@ const NavigationBar = () => {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
+        document.cookie = `rol=${data.user.role}; path=/; max-age=${60 * 60 * 24}; samesite=lax${process.env.NODE_ENV === "production" ? "; secure" : ""}`;
       } else {
         setUser(null);
       }
@@ -62,6 +63,7 @@ const NavigationBar = () => {
       if (res.ok) {
         const data = await res.json();
         setCurrentPeriod(data);
+        document.cookie = `periodo=${data.period_name}; path=/; max-age=${60 * 60 * 24}; samesite=lax${process.env.NODE_ENV === "production" ? "; secure" : ""}`;
       } else {
         setCurrentPeriod(null);
       }

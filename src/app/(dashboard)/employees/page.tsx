@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import getCookie from "@/lib/getToken";
 import {
   AlertDialog,
@@ -23,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/registry/new-york-v4/ui/dialog";
-import { Input } from "@/registry/new-york-v4/ui/input";
+
 import { Label } from "@/registry/new-york-v4/ui/label";
 import {
   Select,
@@ -74,6 +75,7 @@ const initialForm: EmployeeForm = {
 const PAGE_SIZE = 7;
 
 export default function EmployeesPage() {
+  const cookieRol = getCookie("rol");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [offices, setOffices] = useState<Office[]>([]);
   const [officeMap, setOfficeMap] = useState<Map<string, string>>(new Map());
@@ -288,30 +290,35 @@ export default function EmployeesPage() {
             className="w-64"
           />
           {/* Select para filtrar por oficina */}
-          <Select
-            value={selectedOffice}
-            onValueChange={(value) => {
-              setSelectedOffice(value);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="w-56">
-              <SelectValue placeholder="Filtrar por oficina" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las oficinas</SelectItem>
-              {offices.map((o) => (
-                <SelectItem key={o.id} value={o.id}>
-                  {o.office_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
-          </Button>
+          {Number(cookieRol) === 1 && (
+            <Select
+              value={selectedOffice}
+              onValueChange={(value) => {
+                setSelectedOffice(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Filtrar por oficina" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las oficinas</SelectItem>
+                {offices.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.office_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {Number(cookieRol) === 1 && (
+            <Button onClick={openCreate}>
+              <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
+            </Button>
+          )}
         </div>
       </div>
+
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -395,6 +402,25 @@ export default function EmployeesPage() {
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEdit(employee)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    {Number(cookieRol) === 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setDeleteId(employee.id);
+                          setConfirmDeleteOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -402,6 +428,7 @@ export default function EmployeesPage() {
           </TableBody>
         </Table>
       </div>
+
       <div className="flex justify-between items-center text-sm text-muted-foreground">
         <div>Total: {total} empleados</div>
         <div className="flex items-center gap-2">
@@ -534,12 +561,14 @@ export default function EmployeesPage() {
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={actionLoading}>
-                {actionLoading && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {isEdit ? "Guardar Cambios" : "Crear Empleado"}
-              </Button>
+              {Number(cookieRol) === 1 && (
+                <Button type="submit" disabled={actionLoading}>
+                  {actionLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isEdit ? "Guardar Cambios" : "Crear Empleado"}
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </DialogContent>

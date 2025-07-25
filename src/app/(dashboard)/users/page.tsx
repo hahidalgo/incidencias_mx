@@ -84,6 +84,7 @@ const initialForm: UserForm = {
   user_rol: 2,
 };
 const PAGE_SIZE = 7;
+
 const USER_ROLES = {
   111: "Admininistrador de Sistema",
   1: "Recursos Humanos de PlayCityl",

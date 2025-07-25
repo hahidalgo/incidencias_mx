@@ -31,6 +31,13 @@ export interface Movement {
   incidenceObservation: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  userRol: string;
+}
+
 const PAGE_SIZE = 10;
 
 export const MovimientosClient = () => {
@@ -44,6 +51,13 @@ export const MovimientosClient = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
+  const [periods, setPeriods] = useState<any[]>([]);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
+  const [offices, setOffices] = useState<{ id: string; officeName: string }[]>(
+    []
+  );
+  const [selectedOffice, setSelectedOffice] = useState<string>("all");
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);

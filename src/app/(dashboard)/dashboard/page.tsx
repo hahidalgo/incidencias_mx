@@ -46,7 +46,14 @@ const icons = {
   ),
 };
 
+const buttonRules = {
+  incidencias: [1, 2, 3], // Solo Recursos Humanos
+  datos: [2, 3], // Gerente y Administrador
+  reportes: [2, 3], // Gerente y Administrador
+};
+
 export default function DashboardPage() {
+  const cookieRol = getCookie("rol");
   const [user, setUser] = useState<User | null>(null);
   const [incidenciasCount, setIncidenciasCount] = useState<number | null>(null);
   const router = useRouter();
@@ -119,6 +126,12 @@ export default function DashboardPage() {
     fetchIncidenciasCount();
   }, []);
 
+  const canAccessButton = (button: keyof typeof buttonRules) => {
+    const rol = Number(cookieRol);
+
+    return buttonRules[button]?.includes(rol);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -132,15 +145,15 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#fbfafe]">
       {/* Header */}
-      <main className="max-w-5xl mx-auto py-8 px-4">
+      <main className="mx-auto py-8">
         {/* Novedades */}
-        <section className="mb-8">
-          <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
+        <section className="mb-8 px-8">
+          <h2 className="flex items-center gap-2 text-[#0047BA] text-base font-semibold mb-4">
             <AlarmClockIcon className="w-6 h-6" />
             Novedades
           </h2>
           <div className="flex gap-6">
-            <div className="bg-[#0e2655] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
+            <div className="bg-[#0047BA] rounded-xl shadow-md px-8 py-6 flex flex-col items-center text-white w-56">
               <Megaphone className="w-12 h-12" />
               <span className="text-2xl font-bold">
                 {incidenciasCount !== null ? incidenciasCount : "..."}
@@ -153,23 +166,29 @@ export default function DashboardPage() {
         </section>
 
         {/* Registra */}
-        <section className="mb-8 bg-white rounded-xl shadow-md px-8 py-6">
-          <h2 className="flex items-center gap-2 text-[#0e2655] text-base font-semibold mb-4">
+        <section className="mb-8 bg-white px-8 py-6">
+          <h2 className="flex items-center gap-2 text-[#0047BA] text-base font-semibold mb-4">
             <PenToolIcon className="w-6 h-6" />
             Incidencias
           </h2>
-          <div className="flex justify-around  text-[#f39200]">
-            <CardButton
-              icon={"incidencias"}
-              label="Incidencias"
-              source="/movimientos"
-            />
-            <CardButton icon={"datos"} label="Revisión" source="/review" />
-            <CardButton
-              icon={"reportes"}
-              label="Generar cvs"
-              source="/generate-disk"
-            />
+          <div className="flex justify-normal gap-6    text-[#f39200]">
+            {canAccessButton("incidencias") && (
+              <CardButton
+                icon={"incidencias"}
+                label="Incidencias"
+                source="/movimientos"
+              />
+            )}
+            {canAccessButton("datos") && (
+              <CardButton icon={"datos"} label="Revisión" source="/review" />
+            )}
+            {canAccessButton("reportes") && (
+              <CardButton
+                icon={"reportes"}
+                label="Generar cvs"
+                source="/generate-disk"
+              />
+            )}
           </div>
         </section>
       </main>
@@ -200,7 +219,7 @@ function CardButton({ icon, label, source }: CardButtonProps) {
       className="text-[#f39200] flex flex-col items-center justify-center w-40 h-28 bg-white rounded-xl shadow-sm border border-[#ececec] hover:shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3b3bb3] group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm"
     >
       <div className="mb-2">{SelectedIcon}</div>
-      <span className="text-gray-500 text-base group-hover:text-[#0e2655]">
+      <span className="text-gray-500 text-base group-hover:text-[#0047BA]">
         {label}
       </span>
     </button>
