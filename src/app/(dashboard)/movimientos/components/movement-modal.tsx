@@ -97,6 +97,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
 
   const title = initialData ? "Editar Movimiento" : "Crear Movimiento";
   const action = initialData ? "Guardar cambios" : "Crear";
+  const periodo = getCookie("periodo");
 
   const form = useForm<MovementFormValues>({
     resolver: zodResolver(formSchema),
@@ -177,6 +178,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
         incident_code: selectedIncident.incident_code,
         incidence_date: values.incidenceDate,
         incidence_observation: values.incidenceObservation || "",
+        period: periodo,
         id: initialData?.id,
       };
       const url = initialData
@@ -384,9 +386,6 @@ export const MovementModal: React.FC<MovementModalProps> = ({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
                         initialFocus
                         locale={es}
                       />

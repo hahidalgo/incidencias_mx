@@ -311,7 +311,7 @@ export default function EmployeesPage() {
               </SelectContent>
             </Select>
           )}
-          {Number(cookieRol) === 1 && (
+          {Number(cookieRol) !== 1 && (
             <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
             </Button>
@@ -401,13 +401,6 @@ export default function EmployeesPage() {
                       }}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEdit(employee)}
-                    >
-                      <Pencil className="h-4 w-4" />
                     </Button>
                     {Number(cookieRol) === 1 && (
                       <Button
@@ -561,7 +554,7 @@ export default function EmployeesPage() {
               >
                 Cancelar
               </Button>
-              {Number(cookieRol) === 1 && (
+              {Number(cookieRol) !== 1 && (
                 <Button type="submit" disabled={actionLoading}>
                   {actionLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
