@@ -659,15 +659,8 @@ export default function ReviewPage() {
                 </Table>
               </div>
               <DialogFooter>
-                <Button
-                  onClick={handleNotificar}
-                  variant="outline"
-                  disabled={notificarLoading}
-                >
-                  {notificarLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}{" "}
-                  Notificar a Encargado Playcity
+                <Button variant="outline" type="button">
+                  Cancelar
                 </Button>
                 <Button onClick={handlePreAprobar} disabled={preAprobarLoading}>
                   {preAprobarLoading && (
@@ -722,15 +715,8 @@ export default function ReviewPage() {
                 </Table>
               </div>
               <DialogFooter>
-                <Button
-                  onClick={handleNotificarSup}
-                  variant="outline"
-                  disabled={notificarSupLoading}
-                >
-                  {notificarSupLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}{" "}
-                  Notificar a Supervisor de Zona
+                <Button variant="outline" type="button">
+                  Cancelar
                 </Button>
                 <Button onClick={handleAprobar} disabled={aprobarLoading}>
                   {aprobarLoading && (

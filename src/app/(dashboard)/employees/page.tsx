@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/registry/new-york-v4/ui/dialog";
 
+import { canAccess } from "@/lib/roleUtils";
 import { Label } from "@/registry/new-york-v4/ui/label";
 import {
   Select,
@@ -75,7 +76,7 @@ const initialForm: EmployeeForm = {
 const PAGE_SIZE = 7;
 
 export default function EmployeesPage() {
-  const cookieRol = getCookie("rol");
+  const cookieRol = getCookie("rol") || null;
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [offices, setOffices] = useState<Office[]>([]);
   const [officeMap, setOfficeMap] = useState<Map<string, string>>(new Map());
@@ -285,7 +286,7 @@ export default function EmployeesPage() {
             className="w-64"
           />
           {/* Select para filtrar por oficina */}
-          {Number(cookieRol) === 1 && (
+          {canAccess(cookieRol ?? undefined, "employees", "view") && (
             <Select
               value={selectedOffice}
               onValueChange={(value) => {
@@ -306,7 +307,7 @@ export default function EmployeesPage() {
               </SelectContent>
             </Select>
           )}
-          {Number(cookieRol) !== 1 && (
+          {canAccess(cookieRol ?? undefined, "employees", "create") && (
             <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" /> Nuevo Empleado
             </Button>
@@ -397,7 +398,11 @@ export default function EmployeesPage() {
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
-                    {Number(cookieRol) === 1 && (
+                    {canAccess(
+                      cookieRol ?? undefined,
+                      "employees",
+                      "delete"
+                    ) && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -549,7 +554,11 @@ export default function EmployeesPage() {
               >
                 Cancelar
               </Button>
-              {Number(cookieRol) !== 1 && (
+              {canAccess(
+                cookieRol ?? undefined,
+                "employees",
+                isEdit ? "edit" : "create"
+              ) && (
                 <Button type="submit" disabled={actionLoading}>
                   {actionLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -6,6 +6,14 @@ import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import getCookie from "@/lib/getToken";
+import { canAccess } from "@/lib/roleUtils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@radix-ui/react-select";
 import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -58,6 +66,7 @@ export const MovimientosClient = () => {
   );
   const [selectedOffice, setSelectedOffice] = useState<string>("all");
   const [user, setUser] = useState<User | null>(null);
+  const cookieRol = getCookie("rol");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -174,6 +183,49 @@ export const MovimientosClient = () => {
             onChange={handleSearch}
             className="max-w-sm"
           />
+          {canAccess(cookieRol ?? undefined, "movement", "filterOffice") && (
+            <Select
+              value={selectedOffice}
+              onValueChange={(value) => {
+                setSelectedOffice(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-60">
+                <SelectValue placeholder="Filtrar por oficina" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las oficinas</SelectItem>
+                {offices.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.officeName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {/* Select de periodos activos */}
+          <Select
+            value={selectedPeriod}
+            onValueChange={(value) => {
+              setSelectedPeriod(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-105">
+              <SelectValue placeholder="Filtrar por periodo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los periodos</SelectItem>
+              {periods.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.periodName} (
+                  {format(new Date(p.periodStart), "dd/MM/yyyy")} -{" "}
+                  {format(new Date(p.periodEnd), "dd/MM/yyyy")})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
             Agregar
