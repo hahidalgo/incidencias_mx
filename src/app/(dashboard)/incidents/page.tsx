@@ -80,6 +80,7 @@ export default function IncidentsPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   // Debounce search input
   useEffect(() => {
@@ -97,7 +98,7 @@ export default function IncidentsPage() {
         search: debouncedSearch,
       });
       const res = await fetch(
-        `http://localhost:3022/api/v1/incidents?${params.toString()}`,
+        `${apiUrl}incidents?${params.toString()}`,
         {
           method: "GET",
           headers: {
@@ -176,7 +177,7 @@ export default function IncidentsPage() {
             incident_status: Number(form.incident_status),
           };
 
-      const res = await fetch("http://localhost:3022/api/v1/incidents", {
+      const res = await fetch(`${apiUrl}incidents`, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +206,7 @@ export default function IncidentsPage() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch("http://localhost:3022/api/v1/incidents", {
+      const res = await fetch(`${apiUrl}incidents`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

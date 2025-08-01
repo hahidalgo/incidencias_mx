@@ -19,7 +19,7 @@ export type UserTableUser = {
   user_email: string;
   //user_status: "ACTIVE" | "INACTIVE";
   user_status: 1 | 0;
-  user_rol: 1 | 2 | 3;
+  user_rol: 1 | 2 | 3 | 4;
   user_access: [
     {
       id: string;
@@ -41,7 +41,7 @@ interface UserTableProps {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  111: "Super Administrador",
+  4: "Super Administrador",
   1: "Recursos Humanos de PlayCityl",
   2: "Gerente de zona",
   3: "Administrador de personal",

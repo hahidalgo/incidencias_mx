@@ -33,7 +33,7 @@ export default function GenerateDiskPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
   const fetchPeriods = useCallback(async () => {
     setLoading(true);
     try {
@@ -43,7 +43,7 @@ export default function GenerateDiskPage() {
       });
 
       const res = await fetch(
-        `http://localhost:3022/api/v1/periods/with-movements?${params.toString()}`,
+        `${apiUrl}periods/with-movements?${params.toString()}`,
         {
           method: "GET",
           headers: {
@@ -70,19 +70,16 @@ export default function GenerateDiskPage() {
 
   const handleDownload = async (periodId: string, periodName: string) => {
     try {
-      const res = await fetch(
-        `http://localhost:3022/api/v1/periods/generate/csv`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            period: periodName,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}periods/generate/csv`, {
+        method: "POST",
+        body: JSON.stringify({
+          period: periodName,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudo generar el archivo");
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);

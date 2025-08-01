@@ -37,9 +37,9 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     setError("");
-
+    const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
     try {
-      const response = await fetch("http://localhost:3022/api/v1/auth/login", {
+      const response = await fetch(`${apiUrl}auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,9 +77,9 @@ export default function LoginPage() {
             src="/images/login-bg.jpg"
             alt="Fondo login"
             fill
-            style={{ objectFit: 'cover', opacity: 1 }}
+            style={{ objectFit: "cover", opacity: 1 }}
             priority
-          /> 
+          />
           <div className="absolute inset-0 bg-[#0047BA] opacity-90" />
         </div>
         {/* Logos y personas */}
@@ -128,9 +128,15 @@ export default function LoginPage() {
               height={75}
             />
           </div>
-          <h1 className="text-center text-[#0047BA] text-lg font-semibold mb-2">Portal Incidencias</h1>
-          <h2 className="text-center text-[#0047BA] text-md font-semibold mb-2">Gesti&oacute;n de Cultura y Desarrollo</h2>
-          <h3 className="text-center text-gray-700 text-base font-medium mb-6">Inicio de Sesión</h3>
+          <h1 className="text-center text-[#0047BA] text-lg font-semibold mb-2">
+            Portal Incidencias
+          </h1>
+          <h2 className="text-center text-[#0047BA] text-md font-semibold mb-2">
+            Gesti&oacute;n de Cultura y Desarrollo
+          </h2>
+          <h3 className="text-center text-gray-700 text-base font-medium mb-6">
+            Inicio de Sesión
+          </h3>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {error && (
               <Alert variant="destructive">
@@ -138,13 +144,18 @@ export default function LoginPage() {
               </Alert>
             )}
             <div>
-              <Label htmlFor="email" className="text-sm font-medium text-[#0047BA]">Usuario *</Label>
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-[#0047BA]"
+              >
+                Usuario *
+              </Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="tu@email.com"
-                {...register('email')}
-                className={`mt-1 h-11 text-base ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-[#0047BA] focus:border-[#0047BA]'} focus:ring-[#0047BA]`}
+                {...register("email")}
+                className={`mt-1 h-11 text-base ${errors.email ? "border-red-500 focus:border-red-500" : "border-[#0047BA] focus:border-[#0047BA]"} focus:ring-[#0047BA]`}
               />
               {errors.email && (
                 <p className="text-xs text-red-500 mt-1">
@@ -153,14 +164,19 @@ export default function LoginPage() {
               )}
             </div>
             <div>
-              <Label htmlFor="password" className="text-sm font-medium text-[#0047BA]">Contraseña *</Label>
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-[#0047BA]"
+              >
+                Contraseña *
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  {...register('password')}
-                  className={`mt-1 h-11 text-base pr-12 ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-[#0047BA] focus:border-[#0047BA]'} focus:ring-[#0047BA]`}
+                  {...register("password")}
+                  className={`mt-1 h-11 text-base pr-12 ${errors.password ? "border-red-500 focus:border-red-500" : "border-[#0047BA] focus:border-[#0047BA]"} focus:ring-[#0047BA]`}
                 />
                 <Button
                   type="button"

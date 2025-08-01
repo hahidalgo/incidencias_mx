@@ -47,9 +47,9 @@ const icons = {
 };
 
 const buttonRules = {
-  incidencias: [1, 2, 3], // Solo Recursos Humanos
-  datos: [2, 3], // Gerente y Administrador
-  reportes: [2, 3], // Gerente y Administrador
+  incidencias: [1, 2, 3, 4], // Solo Recursos Humanos
+  datos: [2, 3, 4], // Gerente y Administrador
+  reportes: [2, 3, 4], // Gerente y Administrador
 };
 
 export default function DashboardPage() {
@@ -57,11 +57,11 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [incidenciasCount, setIncidenciasCount] = useState<number | null>(null);
   const router = useRouter();
-
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
   useEffect(() => {
     const checkSession = async () => {
       const token = getCookie("token");
-      const res = await fetch("http://localhost:3022/api/v1/auth/me", {
+      const res = await fetch(`${apiUrl}auth/me`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -82,16 +82,13 @@ export default function DashboardPage() {
     const fetchIncidenciasCount = async () => {
       try {
         // Obtener periodo actual
-        const periodRes = await fetch(
-          "http://localhost:3022/api/v1/periods/current",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getCookie("token")}`,
-            },
-          }
-        );
+        const periodRes = await fetch(`${apiUrl}periods/current`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("token")}`,
+          },
+        });
         console.log("periodRes", periodRes);
 
         if (!periodRes.ok) {
@@ -103,7 +100,7 @@ export default function DashboardPage() {
         const respuestaPeriodo = await periodRes.json();
         // Contar movimientos activos de ese periodo
         const movRes = await fetch(
-          `http://localhost:3022/api/v1/periods/filter/${respuestaPeriodo.period_name}/movements`,
+          `${apiUrl}periods/filter/${respuestaPeriodo.period_name}/movements`,
           {
             method: "GET",
             headers: {
