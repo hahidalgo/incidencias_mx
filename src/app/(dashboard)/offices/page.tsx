@@ -91,6 +91,7 @@ export default function OfficesPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   // Debounce search input
   useEffect(() => {
@@ -108,16 +109,13 @@ export default function OfficesPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/offices?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}offices?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener las oficinas.");
       const data = await res.json();
       setOffices(data.data || []);
@@ -137,16 +135,13 @@ export default function OfficesPage() {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:3022/api/v1/companies?page=1&pageSize=1000",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getCookie("token")}`,
-            },
-          }
-        ); // Fetch all companies
+        const res = await fetch(`${apiUrl}companies?page=1&pageSize=1000`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("token")}`,
+          },
+        }); // Fetch all companies
         if (!res.ok) throw new Error("No se pudieron obtener las empresas.");
         const data = await res.json();
         const companyData = data.data || [];
@@ -202,7 +197,7 @@ export default function OfficesPage() {
     setActionLoading(true);
     try {
       const method = isEdit ? "PUT" : "POST";
-      const url = "http://localhost:3022/api/v1/offices";
+      const url = `${apiUrl}offices`;
       // Transformar los campos a snake_case como espera el backend
       const body = isEdit
         ? {
@@ -217,7 +212,7 @@ export default function OfficesPage() {
             office_status: Number(form.office_status),
           };
 
-      const res = await fetch("http://localhost:3022/api/v1/offices", {
+      const res = await fetch(`${apiUrl}offices`, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -244,7 +239,7 @@ export default function OfficesPage() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch("http://localhost:3022/api/v1/offices", {
+      const res = await fetch(`${apiUrl}offices`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

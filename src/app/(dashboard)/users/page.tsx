@@ -125,6 +125,7 @@ export default function UsersPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [form, setForm] = useState<UserForm>(initialForm);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -140,16 +141,13 @@ export default function UsersPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/users?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}users?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener los usuarios.");
       const data = await res.json();
       setUsers(data.data || []);
@@ -170,14 +168,14 @@ export default function UsersPage() {
     const fetchRelatedData = async () => {
       try {
         const [companiesRes, officesRes] = await Promise.all([
-          fetch("http://localhost:3022/api/v1/companies?page=1&pageSize=1000", {
+          fetch(`${apiUrl}companies?page=1&pageSize=1000`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${getCookie("token")}`,
             },
           }),
-          fetch("http://localhost:3022/api/v1/offices?page=1&pageSize=1000", {
+          fetch(`${apiUrl}offices?page=1&pageSize=1000`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -246,7 +244,7 @@ export default function UsersPage() {
       const body: any = { ...form, id: isEdit ? currentUser?.id : undefined };
       if (!body.user_password) delete body.user_password;
 
-      const res = await fetch("http://localhost:3022/api/v1/users", {
+      const res = await fetch(`${apiUrl}users`, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -272,7 +270,7 @@ export default function UsersPage() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch("http://localhost:3022/api/v1/users", {
+      const res = await fetch(`${apiUrl}users`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

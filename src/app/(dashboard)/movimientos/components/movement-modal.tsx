@@ -98,6 +98,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
   const title = initialData ? "Editar Movimiento" : "Crear Movimiento";
   const action = initialData ? "Guardar cambios" : "Crear";
   const periodo = getCookie("periodo");
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   const form = useForm<MovementFormValues>({
     resolver: zodResolver(formSchema),
@@ -127,14 +128,14 @@ export const MovementModal: React.FC<MovementModalProps> = ({
         const token = getCookie("token");
         try {
           const [empRes, incRes] = await Promise.all([
-            fetch("http://localhost:3022/api/v1/employees?pageSize=1000", {
+            fetch(`${apiUrl}employees?pageSize=1000`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
               },
             }),
-            fetch("http://localhost:3022/api/v1/incidents?pageSize=1000", {
+            fetch(`${apiUrl}incidents?pageSize=1000`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
@@ -181,9 +182,7 @@ export const MovementModal: React.FC<MovementModalProps> = ({
         period: periodo,
         id: initialData?.id,
       };
-      const url = initialData
-        ? `http://localhost:3022/api/v1/movements`
-        : "http://localhost:3022/api/v1/movements";
+      const url = initialData ? `${apiUrl}movements` : `${apiUrl}movements`;
       const method = initialData ? "PUT" : "POST";
 
       const res = await fetch(url, {

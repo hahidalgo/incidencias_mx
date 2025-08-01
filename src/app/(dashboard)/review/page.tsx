@@ -71,7 +71,7 @@ const data: RowData[] = [
   },
 ];
 /*
-// Simulación de incidencias (en la práctica, esto vendría de la API)
+// Simulación de incidencias (en la práctica, esto vendría de la API
 const allIncidencias = [
   {
     id: 1,
@@ -133,6 +133,7 @@ export default function ReviewPage() {
   const [currentPeriod, setCurrentPeriod] = useState<any[]>([]);
   const [currentOficina, setCurrentOficina] = useState<any[]>([]);
   const [approvalsBulk, setApprovalsBulk] = useState<any[]>([]);
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   const fetchMovementForPeriodo = useCallback(async () => {
     setLoading(true);
@@ -148,7 +149,7 @@ export default function ReviewPage() {
         debouncedSearchOffice !== "" ? debouncedSearchOffice : "";
 
       const res = await fetch(
-        `http://localhost:3022/api/v1/approvals/movements/filter?period=${String(selectedPeriods)}&office=${String(selectedOficina)}`,
+        `${apiUrl}approvals/movements/filter?period=${String(selectedPeriods)}&office=${String(selectedOficina)}`,
         {
           method: "GET",
           headers: {
@@ -180,16 +181,13 @@ export default function ReviewPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/periods?${params.toString()} `,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}periods?${params.toString()} `, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (res.ok) {
         const data = await res.json();
         setCurrentPeriod(data.periods);
@@ -209,16 +207,13 @@ export default function ReviewPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/offices?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}offices?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener las oficinas.");
       const data = await res.json();
       setCurrentOficina(data.data || []);
@@ -249,20 +244,17 @@ export default function ReviewPage() {
       (mov) => mov.office === selectedOficina
     )?.officeId;
     try {
-      const res = await fetch(
-        `http://localhost:3022/api/v1/approvals/movements/approve-bulk`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            period: selectedPeriodo,
-            office: idOffice,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}approvals/movements/approve-bulk`, {
+        method: "PUT",
+        body: JSON.stringify({
+          period: selectedPeriodo,
+          office: idOffice,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener los periodos.");
       const response = await res.json();
       console.log("response", response);
@@ -287,6 +279,7 @@ export default function ReviewPage() {
     }, 1200);
   }
 
+  /*
   function handleRowClick(row: RowData) {
     if (userRole === "SUPERVISOR_REGIONES") {
       setPreAprobarRow(row);
@@ -296,27 +289,24 @@ export default function ReviewPage() {
       setAprobarOpen(true);
     }
   }
-
+ */
   async function handlePreAprobar() {
     setPreAprobarLoading(true);
     const idOffice = movement.find(
       (mov) => mov.office === selectedOficina
     )?.officeId;
     try {
-      const res = await fetch(
-        `http://localhost:3022/api/v1/approvals/movements/approve-bulk`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            period: selectedPeriodo,
-            office: idOffice,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}approvals/movements/approve-bulk`, {
+        method: "PUT",
+        body: JSON.stringify({
+          period: selectedPeriodo,
+          office: idOffice,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener los periodos.");
       const response = await res.json();
       console.log("response", response);
@@ -355,20 +345,17 @@ export default function ReviewPage() {
       (mov) => mov.office === selectedOficina
     )?.officeId;
     try {
-      const res = await fetch(
-        `http://localhost:3022/api/v1/approvals/movements/approve-bulk`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            period: selectedPeriodo,
-            office: idOffice,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}approvals/movements/approve-bulk`, {
+        method: "PUT",
+        body: JSON.stringify({
+          period: selectedPeriodo,
+          office: idOffice,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener los periodos.");
       const response = await res.json();
       console.log("response", response);
@@ -544,10 +531,10 @@ export default function ReviewPage() {
                 <TableCell>{row.nroIncidencias}</TableCell>
                 <TableCell>
                   {[
-                    "SUPER_ADMIN",
-                    "SUPERVISOR_REGIONES",
-                    "ENCARGADO_RRHH",
-                  ].includes(userRole) ? (
+                    "4", //SUPER_ADMIN
+                    "3", //SUPERVISOR_REGIONES
+                    "2", //ENCARGADO_RRHH
+                  ].includes(rol ?? "") ? (
                     <span
                       onClick={() => {
                         setPreAprobarRow(row);
@@ -588,14 +575,16 @@ export default function ReviewPage() {
                 </TableCell>
                 <TableCell>
                   {[
-                    "SUPER_ADMIN",
-                    "SUPERVISOR_REGIONES",
-                    "ENCARGADO_RRHH",
-                  ].includes(userRole) ? (
+                    "4", //SUPER_ADMIN
+                    "3", //SUPERVISOR_REGIONES
+                    "2", //ENCARGADO_RRHH
+                  ].includes(rol ?? "") ? (
                     <span
                       onClick={() => {
-                        setAprobarRow(row);
-                        setAprobarOpen(true);
+                        setPreAprobarRow(row);
+                        setPreAprobarOpen(true);
+                        setSelectedOficina(row.office);
+                        setSelectedPeriodo(row.period);
                       }}
                       className="cursor-pointer"
                     >

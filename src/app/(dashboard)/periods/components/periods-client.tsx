@@ -50,6 +50,7 @@ export const PeriodsClient = () => {
   const [editingPeriod, setEditingPeriod] = useState<Period | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingPeriod, setDeletingPeriod] = useState<Period | null>(null);
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -65,16 +66,13 @@ export const PeriodsClient = () => {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/periods?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}periods?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener los periodos.");
       const { periods, total, totalPages } = await res.json();
       setPeriods(periods);
@@ -120,7 +118,7 @@ export const PeriodsClient = () => {
   const confirmDelete = async () => {
     if (!deletingPeriod) return;
     try {
-      const res = await fetch("http://localhost:3022/api/v1/periods", {
+      const res = await fetch(`${apiUrl}periods`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deletingPeriod.id }),

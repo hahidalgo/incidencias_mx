@@ -98,6 +98,7 @@ export default function EmployeesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [selectedOffice, setSelectedOffice] = useState("all"); // Valor inicial 'all'
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   // Debounce search input
   useEffect(() => {
@@ -114,16 +115,13 @@ export default function EmployeesPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/employees?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("token")}`, // Asegúrate de manejar el token correctamente
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}employees?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("token")}`, // Asegúrate de manejar el token correctamente
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener los empleados.");
       const data = await res.json();
       setEmployees(data.data || []);
@@ -143,16 +141,13 @@ export default function EmployeesPage() {
   useEffect(() => {
     const fetchOffices = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:3022/api/v1/offices?page=1&pageSize=1000",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getCookie("token")}`, // Asegúrate de manejar el token correctamente
-            },
-          }
-        ); // Fetch all offices
+        const res = await fetch(`${apiUrl}offices?page=1&pageSize=1000`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("token")}`, // Asegúrate de manejar el token correctamente
+          },
+        }); // Fetch all offices
         if (!res.ok) throw new Error("No se pudieron obtener las oficinas.");
         const data = await res.json();
         const officeData = data.data || [];
@@ -227,7 +222,7 @@ export default function EmployeesPage() {
             employee_status: Number(form.employee_status),
           };
 
-      const res = await fetch("http://localhost:3022/api/v1/employees", {
+      const res = await fetch(`${apiUrl}employees`, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +249,7 @@ export default function EmployeesPage() {
     if (!deleteId) return;
     setActionLoading(true);
     try {
-      const res = await fetch("http://localhost:3022/api/v1/employees", {
+      const res = await fetch(`${apiUrl}employees`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

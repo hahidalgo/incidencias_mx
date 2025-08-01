@@ -77,6 +77,7 @@ export default function CompaniesPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   // Debounce search input
   useEffect(() => {
@@ -94,17 +95,14 @@ export default function CompaniesPage() {
         pageSize: String(PAGE_SIZE),
         search: debouncedSearch,
       });
-      const res = await fetch(
-        `http://localhost:3022/api/v1/companies?${params.toString()}`,
-        {
-          cache: "no-store",
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${apiUrl}companies?${params.toString()}`, {
+        cache: "no-store",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error("No se pudieron obtener las compañías.");
       const data = await res.json();
       setCompanies(data.data || []);
@@ -163,7 +161,7 @@ export default function CompaniesPage() {
       const method = isEdit ? "PUT" : "POST";
       const body = isEdit ? { ...form, id: currentCompany?.id } : form;
 
-      const res = await fetch("http://localhost:3022/api/v1/companies", {
+      const res = await fetch(`${apiUrl}companies`, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -191,7 +189,7 @@ export default function CompaniesPage() {
     setActionLoading(true);
     const token = getCookie("token");
     try {
-      const res = await fetch("http://localhost:3022/api/v1/companies", {
+      const res = await fetch(`${apiUrl}companies`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

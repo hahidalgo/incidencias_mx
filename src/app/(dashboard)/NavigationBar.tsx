@@ -29,11 +29,12 @@ const NavigationBar = () => {
   const [user, setUser] = useState<any>(null);
   const [currentPeriod, setCurrentPeriod] = useState<any>(null);
   const router = useRouter();
+  const apiUrl = process.env.NEXT_PUBLIC_MS_INCIDENCIAS_URL;
 
   useEffect(() => {
     const fetchUser = async () => {
       const token = getCookie("token");
-      const res = await fetch("http://localhost:3022/api/v1/auth/me", {
+      const res = await fetch(`${apiUrl}auth/me`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -53,7 +54,7 @@ const NavigationBar = () => {
 
   useEffect(() => {
     const fetchPeriod = async () => {
-      const res = await fetch("http://localhost:3022/api/v1/periods/current", {
+      const res = await fetch(`${apiUrl}periods/current`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
