@@ -8,6 +8,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import getCookie from "@/lib/getToken";
+import { canAccess } from "@/lib/roleUtils";
 import {
   AlertCircleIcon,
   BellIcon,
@@ -77,81 +78,6 @@ const NavigationBar = () => {
     router.push("/login");
   };
 
-  const renderMenuLinks = () => {
-    if (!user) return null;
-
-    // Si el rol es 1, solo mostramos "Movimientos"
-    if (user.role === 1) {
-      return (
-        <NavigationMenuLink asChild>
-          <Link href="/movements" className="px-4 py-2 hover:bg-accent rounded">
-            Movimientos
-          </Link>
-        </NavigationMenuLink>
-      );
-    }
-
-    // Rol 2 y 3 ven todo el menú
-    return (
-      <>
-        <NavigationMenuLink asChild>
-          <Link
-            href="/companies"
-            className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
-          >
-            <Building2Icon className="w-5 h-5" />
-            Compañías
-          </Link>
-        </NavigationMenuLink>
-        <NavigationMenuLink asChild>
-          <Link
-            href="/offices"
-            className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
-          >
-            <FactoryIcon className="w-5 h-5" />
-            Oficinas
-          </Link>
-        </NavigationMenuLink>
-        <NavigationMenuLink asChild>
-          <Link
-            href="/periods"
-            className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
-          >
-            <CalendarIcon className="w-5 h-5" />
-            Periodos de Pago
-          </Link>
-        </NavigationMenuLink>
-        <NavigationMenuLink asChild>
-          <Link
-            href="/incidents"
-            className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
-          >
-            <AlertCircleIcon className="w-5 h-5" />
-            Incidentes
-          </Link>
-        </NavigationMenuLink>
-        <NavigationMenuLink asChild>
-          <Link
-            href="/employees"
-            className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
-          >
-            <UsersRound className="w-5 h-5" />
-            Empleados
-          </Link>
-        </NavigationMenuLink>
-        <NavigationMenuLink asChild>
-          <Link
-            href="/users"
-            className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
-          >
-            <UserIcon className="w-5 h-5" />
-            Usuarios
-          </Link>
-        </NavigationMenuLink>
-      </>
-    );
-  };
-
   return (
     <header className="w-full flex items-center justify-between px-6 py-2 bg-white shadow-sm">
       <div className="flex items-left gap-6">
@@ -187,7 +113,7 @@ const NavigationBar = () => {
       <div className="flex items-center gap-6 text-gray-400">
         <span className="text-gray-500 text-sm">
           Hola{" "}
-          <span className="font-bold text-[#0E2655]">
+          <span className="font-bold text-[#0047BA]">
             {user ? user.name : "..."}
           </span>
         </span>
@@ -195,7 +121,6 @@ const NavigationBar = () => {
           <HouseIcon className="w-5 h-5" />
         </Link>
 
-        <BellIcon className="w-5 h-5" />
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -203,13 +128,80 @@ const NavigationBar = () => {
                 <SettingsIcon className="w-5 h-5" />
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <div className="flex flex-col min-w-[160px]">
-                  {renderMenuLinks()}
+                <div className="flex flex-col min-w-[260px] max-h-[400px] max-w-full overflow-y-auto overflow-x-hidden">
+                  {canAccess(user?.role, "menu", "companies") && (
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href="/companies"
+                        className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
+                      >
+                        <Building2Icon className="w-5 h-5" />
+                        Compañías
+                      </Link>
+                    </NavigationMenuLink>
+                  )}
+                  {canAccess(user?.role, "menu", "offices") && (
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href="/offices"
+                        className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
+                      >
+                        <FactoryIcon className="w-5 h-5" />
+                        Oficinas
+                      </Link>
+                    </NavigationMenuLink>
+                  )}
+                  {canAccess(user?.role, "menu", "periods") && (
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href="/periods"
+                        className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
+                      >
+                        <CalendarIcon className="w-5 h-5" />
+                        Periodos de Pago
+                      </Link>
+                    </NavigationMenuLink>
+                  )}
+                  {canAccess(user?.role, "menu", "incidents") && (
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href="/incidents"
+                        className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
+                      >
+                        <AlertCircleIcon className="w-5 h-5" />
+                        Incidentes
+                      </Link>
+                    </NavigationMenuLink>
+                  )}
+                  {canAccess(user?.role, "menu", "employees") && (
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href="/employees"
+                        className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
+                      >
+                        <UsersRound className="w-5 h-5" />
+                        Empleados
+                      </Link>
+                    </NavigationMenuLink>
+                  )}
+                  {canAccess(user?.role, "menu", "users") && (
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href="/users"
+                        className="px-4 py-2 hover:bg-accent rounded flex-row items-center gap-2"
+                      >
+                        <UserIcon className="w-5 h-5" />
+                        Usuarios
+                      </Link>
+                    </NavigationMenuLink>
+                  )}
                 </div>
               </NavigationMenuContent>
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
+
+        <BellIcon className="w-5 h-5" />
         <PowerIcon
           className="w-5 h-5 cursor-pointer"
           onClick={handleLogout}

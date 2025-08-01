@@ -78,17 +78,23 @@ export function canAccess(
   ruleKey: keyof RoleRules,
   action?: ActionType
 ) {
+  console.log({
+    userRol,
+    ruleKey,
+    action,
+  });
   if (!userRol) return false;
   const rule = roleRules[ruleKey];
+  const userRolName = getRoleLabel(userRol);
   if (typeof rule === "object" && action) {
     // Para objetos con acciones (dashboard, employees, formEmployees, menu)
     return (
       Array.isArray((rule as Record<string, string[]>)[action]) &&
-      (rule as Record<string, string[]>)[action].includes(userRol)
+      (rule as Record<string, string[]>)[action].includes(userRolName)
     );
   }
   if (Array.isArray(rule)) {
-    return rule.includes(userRol);
+    return rule.includes(userRolName);
   }
 
   return false;
@@ -100,3 +106,19 @@ export const ROLE_LABELS: Record<string, string> = {
   2: "Gerente de zona",
   3: "Administrador de personal",
 };
+
+export function getRoleLabel(roleName: string | undefined): string {
+  const roleNameString = String(roleName);
+  switch (roleNameString) {
+    case "4":
+      return "SUPER_ADMIN"; // Super Administrador
+    case "3":
+      return "ENCARGADO_RRHH"; // Administrador de personal.
+    case "2":
+      return "SUPERVISOR_REGIONES"; // Gerente de zona
+    case "1":
+      return "ENCARGADO_CASINO"; // Recursos Humanos de PlayCity
+    default:
+      return "Desconocido";
+  }
+}

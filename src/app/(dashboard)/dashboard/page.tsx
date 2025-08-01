@@ -1,6 +1,7 @@
 "use client";
 
 import getCookie from "@/lib/getToken";
+import { getRoleLabel } from "@/lib/roleUtils";
 import {
   AlarmClockIcon,
   CalendarSync,
@@ -46,10 +47,16 @@ const icons = {
   ),
 };
 
+// Reglas de visibilidad por rol
 const buttonRules = {
-  incidencias: [1, 2, 3, 4], // Solo Recursos Humanos
-  datos: [2, 3, 4], // Gerente y Administrador
-  reportes: [2, 3, 4], // Gerente y Administrador
+  incidencias: [
+    "SUPER_ADMIN",
+    "ENCARGADO_RRHH",
+    "SUPERVISOR_REGIONES",
+    "ENCARGADO_CASINO",
+  ],
+  datos: ["SUPER_ADMIN", "ENCARGADO_RRHH", "SUPERVISOR_REGIONES"],
+  reportes: ["SUPER_ADMIN", "ENCARGADO_RRHH"],
 };
 
 export default function DashboardPage() {
@@ -89,7 +96,6 @@ export default function DashboardPage() {
             Authorization: `Bearer ${getCookie("token")}`,
           },
         });
-        console.log("periodRes", periodRes);
 
         if (!periodRes.ok) {
           setIncidenciasCount(0);
@@ -123,10 +129,12 @@ export default function DashboardPage() {
     fetchIncidenciasCount();
   }, []);
 
+  // Función para verificar permisos de botones
   const canAccessButton = (button: keyof typeof buttonRules) => {
-    const rol = Number(cookieRol);
+    if (!cookieRol) return false;
+    const cookieRollName = getRoleLabel(cookieRol);
 
-    return buttonRules[button]?.includes(rol);
+    return buttonRules[button].includes(cookieRollName as unknown as string);
   };
 
   if (!user) {
